@@ -6,27 +6,47 @@ const getEmailCode = require("../utils/getRandom");
 const send = require("../utils/send");
 
 router.post("/register", (req, res) => {
-  console.log(req.body);
-  res.send({
-    code: 200,
-    msg: "访问成功！",
-    result: {
-      test: 111,
-    },
+  const { qq, pass } = req.body;
+  pool.query(`SELECT * FROM USERPASS WHERE qq=${qq}`, (err, sqlRes) => {
+    if (err) send.error(res, err);
+    if (sqlRes.length > 0) {
+      // 当前数据库中已存在该数据了，所以不能再次进行插入
+      send.warn(res, "当前用户已经存在，请直接登录");
+      return;
+    } else {
+      // 可以注册
+      pool.query(
+        `INSERT INTO USERPASS VALUE('${qq}', '${pass}', '${+new Date()}')`
+      ),
+        (err) => err && send.error(res, err);
+    }
+    send.success(res);
   });
 });
 
 router.post("/code", (req, res) => {
   const code = getEmailCode();
   const qq = req.body.qq;
-  pool.query(
-    `INSERT INTO USERCODE value('${
-      +new Date() + qq
-    }','${qq}','${code}', '${+new Date()}')`,
-    (err, res) => {
-      if (err) send.error(res, err);
+  pool.query(`SELECT * FROM USERCODE WHERE qq=${qq}`, (err, sqlRes) => {
+    if (err) send.error(res, err);
+    if (sqlRes.length > 0) {
+      // 当前已经存在该qq的验证码了，需要覆盖
+      pool.query(
+        `UPDATE USERCODE SET code = ${code}, sendtime = ${+new Date()} `,
+        (err) => {
+          if (err) send.error(res, err);
+        }
+      );
+    } else {
+      // 不存在的话，进行插入
+      pool.query(
+        `INSERT INTO USERCODE VALUE('${qq}', '${code}', '${+new Date()}')`,
+        (err) => {
+          if (err) send.error(res, err);
+        }
+      );
     }
-  );
+  });
   send.success(res);
 });
 

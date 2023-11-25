@@ -1,16 +1,22 @@
 module.exports = {
-  success: (res, data, code, msg) => {
+  success: (res, data, msg) => {
     res.send({
-      code: code || 200,
+      code: 200,
       msg: msg || "Success",
       result: {
         ...data,
       },
     });
   },
-  error: (res, err, code, msg) => {
+  warn: (res, msg) => {
     res.send({
-      code: code || 400,
+      code: 301,
+      msg: msg || "warn",
+    });
+  },
+  error: (res, err, msg) => {
+    res.send({
+      code: 400,
       msg: msg || "Error",
       result: {
         err,
