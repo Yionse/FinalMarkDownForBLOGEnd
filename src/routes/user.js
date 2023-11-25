@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../utils/getDbContext");
 
+const pool = require("../utils/getDbContext");
 const getEmailCode = require("../utils/getRandom");
 const send = require("../utils/send");
+const sendEmailCode = require("../utils/sendEmailCode");
 
 router.post("/register", (req, res) => {
   const { qq, pass } = req.body;
@@ -27,6 +28,12 @@ router.post("/register", (req, res) => {
 router.post("/code", (req, res) => {
   const code = getEmailCode();
   const qq = req.body.qq;
+  try {
+    sendEmailCode(qq, code);
+  } catch (error) {
+    send.error(res, "QQ有误");
+    return;
+  }
   pool.query(`SELECT * FROM USERCODE WHERE qq=${qq}`, (err, sqlRes) => {
     if (err) send.error(res, err);
     if (sqlRes.length > 0) {
