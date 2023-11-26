@@ -1,5 +1,5 @@
 module.exports = {
-  success: (res, data, msg) => {
+  success: (res, msg, data) => {
     res.send({
       code: 200,
       msg: msg || "Success",
