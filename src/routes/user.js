@@ -25,13 +25,19 @@ router.post("/register", (req, res) => {
   });
 });
 
-router.post("/code", (req, res) => {
+router.post("/code", async (req, res) => {
+  let isErr = false;
   const code = getEmailCode();
   const qq = req.body.qq;
-  try {
-    sendEmailCode(qq, code);
-  } catch (error) {
-    send.error(res, "QQ有误");
+  await sendEmailCode(qq, code).catch((err) => {
+    isErr = true;
+    if (err && err.responseCode === 550) {
+      send.warn(res, "当前QQ号有误", { isQQError: true });
+    } else {
+      send.warn(res, "网络错误");
+    }
+  });
+  if (isErr) {
     return;
   }
   pool.query(`SELECT * FROM USERCODE WHERE qq=${qq}`, (err, sqlRes) => {
@@ -39,7 +45,7 @@ router.post("/code", (req, res) => {
     if (sqlRes.length > 0) {
       // 当前已经存在该qq的验证码了，需要覆盖
       pool.query(
-        `UPDATE USERCODE SET code = ${code}, sendtime = ${+new Date()} `,
+        `UPDATE USERCODE SET code = ${code}, sendtime = ${+new Date()} WHERE qq = ${qq}`,
         (err) => {
           if (err) send.error(res, err);
         }

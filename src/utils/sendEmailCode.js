@@ -18,11 +18,7 @@ function sendEmailCode(qq, code) {
     text: `The verification code is: ${code}`, // 邮件正文
   };
   // 发送邮件
-  try {
-    transporter.sendMail(mailOptions);
-  } catch (error) {
-    console.log(error, "1231321");
-  }
+  return transporter.sendMail(mailOptions);
 }
 
 module.exports = sendEmailCode;

@@ -8,10 +8,13 @@ module.exports = {
       },
     });
   },
-  warn: (res, msg) => {
+  warn: (res, msg, data) => {
     res.send({
       code: 301,
       msg: msg || "warn",
+      result: {
+        ...data,
+      },
     });
   },
   error: (res, err, msg) => {
