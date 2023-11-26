@@ -7,21 +7,46 @@ const send = require("../utils/send");
 const sendEmailCode = require("../utils/sendEmailCode");
 
 router.post("/register", (req, res) => {
-  const { qq, pass } = req.body;
+  const { qq, pass, code } = req.body;
+  let resErr;
   pool.query(`SELECT * FROM USERPASS WHERE qq=${qq}`, (err, sqlRes) => {
-    if (err) send.error(res, err);
+    if (err) resErr = err;
     if (sqlRes.length > 0) {
       // 当前数据库中已存在该数据了，所以不能再次进行插入
       send.warn(res, "当前用户已经存在，请直接登录");
       return;
     } else {
-      // 可以注册
+      // 可以注册，判断验证码是否过期
       pool.query(
-        `INSERT INTO USERPASS VALUE('${qq}', '${pass}', '${+new Date()}')`
-      ),
-        (err) => err && send.error(res, err);
+        `SELECT sendtime FROM USERCODE WHERE qq=${qq}`,
+        (err, sqlRes) => {
+          if (err) resErr = err;
+          const intervalSecond =
+            (+new Date() - Number(sqlRes[0].sendtime)) / 1000;
+          if (Math.floor(intervalSecond) > 60) {
+            //  验证码过期
+            send.warn(res, "验证码过期，请重新发送验证码");
+            resErr.sended = true; //  不要重复发送了
+            return;
+          } else {
+            //  没过期
+            pool.query(
+              `INSERT INTO USERPASS VALUE('${qq}', '${pass}', '${+new Date()}')`,
+              (err) => {
+                if (err) resErr = err;
+              }
+            );
+          }
+        }
+      );
     }
-    send.success(res);
+    if (resErr) {
+      send.error(res, resErr);
+    } else if (resErr?.sened) {
+      return; //  不要再次发送
+    } else {
+      send.success(res, "注册成功");
+    }
   });
 });
 
