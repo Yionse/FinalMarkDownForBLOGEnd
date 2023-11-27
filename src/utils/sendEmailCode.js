@@ -15,7 +15,7 @@ function sendEmailCode(qq, code) {
     from: `${process.env.QQ}@qq.com`, // 发件人地址
     to: `${qq}@qq.com`, // 收件人地址
     subject: "ZTC博客的验证码", // 邮件主题
-    text: `The verification code is: ${code}`, // 邮件正文
+    text: `The verification code is: ${code}. Effective in one minute`, // 邮件正文
   };
   // 发送邮件
   return transporter.sendMail(mailOptions);

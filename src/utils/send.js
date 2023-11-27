@@ -1,10 +1,15 @@
 module.exports = {
+<<<<<<< HEAD
   success: (res, msg, data) => {
+=======
+  success: (res, data, msg, isShowMessage = false) => {
+>>>>>>> bdcc09b (:rocket: 登录完成)
     res.send({
       code: 200,
       msg: msg || "Success",
       result: {
         ...data,
+        isShowMessage: isShowMessage,
       },
     });
   },
@@ -17,7 +22,7 @@ module.exports = {
       },
     });
   },
-  error: (res, err, msg) => {
+  error: (res, msg, err) => {
     res.send({
       code: 400,
       msg: msg || "Error",
