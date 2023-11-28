@@ -1,9 +1,5 @@
 module.exports = {
-<<<<<<< HEAD
-  success: (res, msg, data) => {
-=======
   success: (res, data, msg, isShowMessage = false) => {
->>>>>>> bdcc09b (:rocket: 登录完成)
     res.send({
       code: 200,
       msg: msg || "Success",
