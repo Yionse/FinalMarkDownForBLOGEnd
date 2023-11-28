@@ -5,15 +5,16 @@ const pool = require("../utils/getDbContext");
 const getEmailCode = require("../utils/getRandom");
 const send = require("../utils/send");
 const sendEmailCode = require("../utils/sendEmailCode");
+const { getToken } = require("../utils/tokens");
 
-/**
- *
- * @param {*} res 发送对象
- * @param {*} qq 要验证的对应qq
- * @param {*} code 接收到的验证码，需要和数据库中的比对
- * @param {*} callback 验证通过时，传入函数
- */
 const checkCode = (res, qq, code, callback) => {
+  /**
+   *
+   * @param {*} res 发送对象
+   * @param {*} qq 要验证的对应qq
+   * @param {*} code 接收到的验证码，需要和数据库中的比对
+   * @param {*} callback 验证通过时，传入函数
+   */
   try {
     // 需要传入一个没过期，且验证通过的函数，也就是在验证码通过验证后的函数
     pool.query(
@@ -44,6 +45,11 @@ const checkCode = (res, qq, code, callback) => {
   }
 };
 
+router.post("/gettoken", (req, res) => {
+  const token = getToken(req.body.qq);
+  send.success(res, "获取成功", { token });
+});
+
 router.post("/forget", (req, res) => {
   const { qq, pass, code } = req.body;
   console.log(qq, pass, code);
@@ -52,10 +58,13 @@ router.post("/forget", (req, res) => {
     pool.query(
       `UPDATE USERPASS SET pass = '${pass}' where qq = '${qq}'`,
       (err, sqlRes) => {
-        console.log(err, sqlRes);
+        if (sqlRes.affectedRows > 0) {
+          send.success(res, {}, "重置密码成功", true);
+        } else {
+          send.warn(res, "重置失败，可能还未注册");
+        }
       }
     );
-    send.success(res, {}, "重置密码成功", true);
   });
 });
 
