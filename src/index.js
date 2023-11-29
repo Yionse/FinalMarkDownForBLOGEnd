@@ -10,9 +10,6 @@ const cors = require("cors");
 // 引入全局属性
 require("dotenv").config();
 
-// 连接数据库
-const pool = require("./utils/getDbContext");
-
 const { user } = require("./routes");
 
 // 解决前端跨域

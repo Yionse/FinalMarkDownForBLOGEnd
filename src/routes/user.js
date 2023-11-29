@@ -46,11 +46,6 @@ const checkCode = (res, qq, code, callback) => {
   }
 };
 
-router.post("/gettoken", (req, res) => {
-  const token = getToken(req.body.qq);
-  send.success(res, "获取成功", { token });
-});
-
 router.post("/forget", (req, res) => {
   const { qq, pass, code } = req.body;
   checkCode(res, qq, code, () => {
@@ -98,7 +93,13 @@ router.post("/login", (req, res) => {
     pool.query(`SELECT * FROM USERPASS WHERE qq = ${qq}`, (err, sqlRes) => {
       if (sqlRes?.length > 0 && sqlRes[0]?.pass === pass) {
         // 查到了该数据，且密码验证通过
-        send.success(res, { isLogin: true }, "登录成功", true);
+        const token = getToken(qq, sqlRes[0]?.salt);
+        send.success(
+          res,
+          { isLogin: true, token: "Bearer " + token },
+          "登录成功",
+          true
+        );
       } else {
         // 没查到，当前用户没注册
         send.warn(res, "当前用户没注册,或密码错误");
