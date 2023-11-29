@@ -5,7 +5,7 @@ const pool = require("../utils/getDbContext");
 const getEmailCode = require("../utils/getRandom");
 const send = require("../utils/send");
 const sendEmailCode = require("../utils/sendEmailCode");
-const { getToken } = require("../utils/tokens");
+const { getToken, verifyToken } = require("../utils/tokens");
 const getRandomSalt = require("../utils/getRandomSalt");
 
 const checkCode = (res, qq, code, callback) => {
@@ -165,6 +165,12 @@ router.post("/getsalt", (req, res) => {
   } catch (error) {
     send.error(res, "网络错误", error);
   }
+});
+
+router.post("/token", (req, res) => {
+  const { token } = req.body;
+  const isSuccess = verifyToken(token?.split(" ")[1]);
+  send.success(res, { isSuccess }, isSuccess ? "验证成功" : "验证失败");
 });
 
 module.exports = router;

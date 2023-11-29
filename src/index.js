@@ -11,6 +11,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const { user } = require("./routes");
+const send = require("./utils/send");
 
 // 解决前端跨域
 app.use(cors());

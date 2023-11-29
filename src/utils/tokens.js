@@ -7,7 +7,7 @@ function getToken(qq, salt) {
   });
 }
 
-function verfiyToken(token) {
+function verifyToken(token) {
   let isSuccess = true;
   jwt.verify(token, process.env.SECRETKEY, (err, res) => {
     if (err) {
@@ -20,5 +20,5 @@ function verfiyToken(token) {
 
 module.exports = {
   getToken,
-  verfiyToken,
+  verifyToken,
 };
