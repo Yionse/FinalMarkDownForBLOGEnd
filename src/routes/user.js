@@ -6,6 +6,7 @@ const getEmailCode = require("../utils/getRandom");
 const send = require("../utils/send");
 const sendEmailCode = require("../utils/sendEmailCode");
 const { getToken } = require("../utils/tokens");
+const getRandomSalt = require("../utils/getRandomSalt");
 
 const checkCode = (res, qq, code, callback) => {
   /**
@@ -52,7 +53,6 @@ router.post("/gettoken", (req, res) => {
 
 router.post("/forget", (req, res) => {
   const { qq, pass, code } = req.body;
-  console.log(qq, pass, code);
   checkCode(res, qq, code, () => {
     // 通过验证时，更新密码
     pool.query(
@@ -71,37 +71,37 @@ router.post("/forget", (req, res) => {
 router.post("/register", (req, res) => {
   const { qq, pass, code } = req.body;
   try {
-    // 需要传入一个没过期，且验证通过的函数，也就是在验证码通过验证后的函数
-    pool.query(`SELECT * FROM USERPASS WHERE qq=${qq}`, (err, sqlRes) => {
-      if (sqlRes.length > 0) {
-        // 当前数据库中已存在该数据了，所以不能再次进行插入
-        send.warn(res, "当前用户已经存在，请直接登录");
-        return;
-      } else {
-        checkCode(res, qq, code, () => {
+    checkCode(res, qq, code, () => {
+      // 需要传入一个没过期，且验证通过的函数，也就是在验证码通过验证后的函数
+      pool.query(`SELECT * FROM USERPASS WHERE qq=${qq}`, (err, sqlRes) => {
+        if (sqlRes.length > 0 && sqlRes[0]?.pass) {
+          // 当前数据库中已存在该数据了，所以不能再次进行插入
+          send.warn(res, "当前用户已经存在，请直接登录");
+          return;
+        } else {
           pool.query(
-            `INSERT INTO USERPASS VALUE('${qq}', '${pass}', '${+new Date()}')`
+            `UPDATE USERPASS SET pass='${pass}', createtime='${+new Date()}' WHERE qq='${qq}'`,
+            (err, sqlRes) => console.log(err, sqlRes)
           );
           send.success(res, {}, "注册成功", true);
-        });
-      }
+        }
+      });
     });
   } catch (error) {
-    console.log("走这了", error);
     send.error(res, "网络错误", error);
   }
 });
 
 router.post("/login", (req, res) => {
-  const { qq } = req.body;
+  const { qq, pass } = req.body;
   try {
     pool.query(`SELECT * FROM USERPASS WHERE qq = ${qq}`, (err, sqlRes) => {
-      if (sqlRes?.length > 0) {
-        // 查到了，将密码返回
-        send.success(res, { pass: sqlRes[0].pass });
+      if (sqlRes?.length > 0 && sqlRes[0]?.pass === pass) {
+        // 查到了该数据，且密码验证通过
+        send.success(res, { isLogin: true }, "登录成功", true);
       } else {
         // 没查到，当前用户没注册
-        send.warn(res, "当前用户没注册");
+        send.warn(res, "当前用户没注册,或密码错误");
       }
     });
   } catch (error) {
@@ -133,6 +133,35 @@ router.post("/code", async (req, res) => {
       send.warn(res, "当前QQ号有误", { isQQError: true });
       return;
     }
+    send.error(res, "网络错误", error);
+  }
+});
+
+router.post("/getsalt", (req, res) => {
+  const { qq, isCreate } = req.body;
+  try {
+    pool.query(`SELECT * FROM USERPASS WHERE qq='${qq}'`, (err, sqlRes) => {
+      if (!isCreate) {
+        // 不是注册用户
+        send.success(res, { salt: sqlRes[0]?.salt }, "获取随机盐成功");
+        return;
+      }
+      if (sqlRes.length < 1) {
+        const salt = getRandomSalt();
+        // 当前不存在该用户，说明执行的是注册操作
+        pool.query(
+          `INSERT INTO USERPASS value('${qq}', '', '', '${salt}')`,
+          (err, sqlRes) => {
+            console.log(err, sqlRes);
+          }
+        );
+        send.success(res, { salt }, "获取随机盐成功");
+      } else {
+        // 是注册用户，但当前数据库中已存在，所以无需再次创建
+        send.success(res, {}, "当前已经存在盐值");
+      }
+    });
+  } catch (error) {
     send.error(res, "网络错误", error);
   }
 });
