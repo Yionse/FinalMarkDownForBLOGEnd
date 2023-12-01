@@ -74,9 +74,13 @@ router.post("/register", (req, res) => {
           send.warn(res, "当前用户已经存在，请直接登录");
           return;
         } else {
+          // 注册成功，插入密码表
           pool.query(
-            `UPDATE USERPASS SET pass='${pass}', createtime='${+new Date()}' WHERE qq='${qq}'`,
-            (err, sqlRes) => console.log(err, sqlRes)
+            `UPDATE USERPASS SET pass='${pass}', createtime='${+new Date()}' WHERE qq='${qq}'`
+          );
+          // 插入个人信息表
+          pool.query(
+            `INSERT INTO userinfo VALUES ('${qq}', 'https://q1.qlogo.cn/g?b=qq&nk=${qq}&s=5', '${qq}', '${+new Date()}', '0', '0', '未填', '未填', '未填', '这里介绍不了')`
           );
           send.success(res, {}, "注册成功", true);
         }

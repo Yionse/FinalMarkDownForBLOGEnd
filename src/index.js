@@ -7,6 +7,9 @@ const app = express();
 const router = express.Router();
 const cors = require("cors");
 
+//  启用标头处理，方便后续拿到ip地址
+// app.set("trust proxy", true);
+
 // 引入全局属性
 require("dotenv").config();
 
