@@ -5,8 +5,9 @@ const pool = require("../utils/getDbContext");
 const getEmailCode = require("../utils/getRandom");
 const send = require("../utils/send");
 const sendEmailCode = require("../utils/sendEmailCode");
-const { getToken, verifyToken } = require("../utils/tokens");
+const { getToken, getTokenInfo } = require("../utils/tokens");
 const getRandomSalt = require("../utils/getRandomSalt");
+const getSqlData = require("../utils/getSqlData");
 
 const checkCode = (res, qq, code, callback) => {
   /**
@@ -44,6 +45,11 @@ const checkCode = (res, qq, code, callback) => {
   } catch (error) {
     send.error(res, "网络错误", error);
   }
+};
+
+const getUserInfo = async (user) => {
+  const res = await getSqlData(`SELECT * FROM USERINFO WHERE qq = '${user}'`);
+  return res[0];
 };
 
 router.post("/forget", (req, res) => {
@@ -93,17 +99,20 @@ router.post("/register", (req, res) => {
 
 router.post("/login", (req, res) => {
   const { qq, pass } = req.body;
+  console.log(req);
   try {
     pool.query(`SELECT * FROM USERPASS WHERE qq = ${qq}`, (err, sqlRes) => {
       if (sqlRes?.length > 0 && sqlRes[0]?.pass === pass) {
         // 查到了该数据，且密码验证通过
         const token = getToken(qq, sqlRes[0]?.salt);
-        send.success(
-          res,
-          { isLogin: true, token: "Bearer " + token },
-          "登录成功",
-          true
-        );
+        pool.query(`SELECT * FROM USERINFO WHERE qq=${qq}`, (err, sqlRes) => {
+          send.success(
+            res,
+            { isLogin: true, token: "Bearer " + token, userInfo: sqlRes[0] },
+            "登录成功",
+            true
+          );
+        });
       } else {
         // 没查到，当前用户没注册
         send.warn(res, "当前用户没注册,或密码错误");
@@ -171,10 +180,14 @@ router.post("/getsalt", (req, res) => {
   }
 });
 
-router.post("/token", (req, res) => {
+router.post("/token", async (req, res) => {
   const { token } = req.body;
-  const isSuccess = verifyToken(token?.split(" ")[1]);
-  send.success(res, { isSuccess }, isSuccess ? "验证成功" : "验证失败");
+  const { isSuccess, user } = getTokenInfo(token?.split(" ")[1]);
+  send.success(
+    res,
+    { isSuccess, ...(await getUserInfo(user)) },
+    isSuccess ? "验证成功" : "验证失败"
+  );
 });
 
 module.exports = router;

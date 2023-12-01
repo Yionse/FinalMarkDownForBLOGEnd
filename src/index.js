@@ -2,7 +2,6 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const bodyParser = require("body-parser");
-
 const app = express();
 const router = express.Router();
 const cors = require("cors");
@@ -13,8 +12,8 @@ const cors = require("cors");
 // 引入全局属性
 require("dotenv").config();
 
-const { user } = require("./routes");
-const send = require("./utils/send");
+const { user, users } = require("./routes");
+const { verifyToken } = require("./utils/tokens");
 
 // 解决前端跨域
 app.use(cors());
@@ -45,7 +44,9 @@ router.post("/md", (req, res) => {
 
 app.use("/test", router);
 
+// 带s的路由需要经过token鉴权
 app.use("/user", user);
+app.use("/users", verifyToken, users);
 
 app.listen(9876, () => {
   console.log("服务器启动成功！");
