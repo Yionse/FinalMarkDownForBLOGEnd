@@ -23,6 +23,10 @@ function getTokenInfo(token) {
 }
 
 function verifyToken(req, res, next) {
+  if (!req.headers["x-token"]) {
+    send.error(res, "请先登录");
+    return;
+  }
   const verifyTokenRes = getTokenInfo(req.headers["x-token"].split(" ")[1]);
   if (verifyTokenRes.isSuccess) {
     next();

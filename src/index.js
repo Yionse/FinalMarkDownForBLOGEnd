@@ -15,6 +15,17 @@ require("dotenv").config();
 const { user, users } = require("./routes");
 const { verifyToken } = require("./utils/tokens");
 
+// 限制ip访问
+// app.use((req, res, next) => {
+//   if (req.headers.origin === "http://localhost:9009") {
+//     next();
+//   } else {
+//     res.status(403).send({
+//       msg: "限制IP访问",
+//     });
+//   }
+// });
+
 // 解决前端跨域
 app.use(cors());
 

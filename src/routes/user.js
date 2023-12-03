@@ -7,7 +7,6 @@ const send = require("../utils/send");
 const sendEmailCode = require("../utils/sendEmailCode");
 const { getToken, getTokenInfo } = require("../utils/tokens");
 const getRandomSalt = require("../utils/getRandomSalt");
-const getSqlData = require("../utils/getSqlData");
 
 const checkCode = (res, qq, code, callback) => {
   /**
@@ -45,11 +44,6 @@ const checkCode = (res, qq, code, callback) => {
   } catch (error) {
     send.error(res, "网络错误", error);
   }
-};
-
-const getUserInfo = async (user) => {
-  const res = await getSqlData(`SELECT * FROM USERINFO WHERE qq = '${user}'`);
-  return res[0];
 };
 
 router.post("/forget", (req, res) => {
@@ -99,7 +93,6 @@ router.post("/register", (req, res) => {
 
 router.post("/login", (req, res) => {
   const { qq, pass } = req.body;
-  console.log(req);
   try {
     pool.query(`SELECT * FROM USERPASS WHERE qq = ${qq}`, (err, sqlRes) => {
       if (sqlRes?.length > 0 && sqlRes[0]?.pass === pass) {
@@ -163,12 +156,7 @@ router.post("/getsalt", (req, res) => {
       if (sqlRes.length < 1) {
         const salt = getRandomSalt();
         // 当前不存在该用户，说明执行的是注册操作
-        pool.query(
-          `INSERT INTO USERPASS value('${qq}', '', '', '${salt}')`,
-          (err, sqlRes) => {
-            console.log(err, sqlRes);
-          }
-        );
+        pool.query(`INSERT INTO USERPASS value('${qq}', '', '', '${salt}')`);
         send.success(res, { salt }, "获取随机盐成功");
       } else {
         // 是注册用户，但当前数据库中已存在，所以无需再次创建
@@ -178,16 +166,6 @@ router.post("/getsalt", (req, res) => {
   } catch (error) {
     send.error(res, "网络错误", error);
   }
-});
-
-router.post("/token", async (req, res) => {
-  const { token } = req.body;
-  const { isSuccess, user } = getTokenInfo(token?.split(" ")[1]);
-  send.success(
-    res,
-    { isSuccess, ...(await getUserInfo(user)) },
-    isSuccess ? "验证成功" : "验证失败"
-  );
 });
 
 module.exports = router;
