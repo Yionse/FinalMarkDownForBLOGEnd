@@ -29,4 +29,16 @@ router.post("/token", async (req, res) => {
   );
 });
 
+router.post("/modify", async (req, res) => {
+  const { username, school, prefession, sex, desc, qq } = req.body;
+  const sqlRes = await getSqlData(
+    `UPDATE USERINFO SET username='${username}', school='${school}', prefession='${prefession}', sex='${sex}', description='${desc}' WHERE qq='${qq}'`
+  );
+  if (sqlRes.affectedRows === 1) {
+    send.success(res, { isUpdateSuccess: true }, "修改成功", true);
+  } else {
+    send.error(res, "修改失败");
+  }
+});
+
 module.exports = router;
