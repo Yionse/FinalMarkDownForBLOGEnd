@@ -2,10 +2,11 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const getSqlData = require("../utils/getSqlData");
 
 const router = express.Router();
 
-router.post("/upload", uploadFile, (req, res) => {
+router.post("/upload", uploadFile, async (req, res) => {
   if (!req.file) {
     return res.status(400).send("上传失败");
   }
@@ -14,9 +15,20 @@ router.post("/upload", uploadFile, (req, res) => {
 
   // 为上传的文件添加扩展名
   fs.renameSync(req.file.path, `${req.file.path}${extname}`);
+
+  // 文件在线路径
+  const url =
+    "http://localhost:9876/" + req.file.path.replace("\\", "/") + extname;
+
+  // 如果传递了qq，则说明是更换头像
+  if (req.body.qq) {
+    await getSqlData(
+      `UPDATE USERINFO SET userImg='${url}' where qq='${req.body.qq}'`
+    );
+  }
   //返回路径
   res.status(200).send({
-    url: "http://localhost:9876/" + req.file.path + extname,
+    url,
     message: "上传成功",
   });
 });
