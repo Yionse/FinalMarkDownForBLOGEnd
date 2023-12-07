@@ -61,7 +61,7 @@ router.post("/imgInMd", uploadFileForImg, (req, res) => {
 
   //返回路径
   res.status(200).send({
-    url: "http://localhost:9876/" + req.file.path + extname,
+    url: "http://localhost:9876/" + req.file.path.replace("\\", "/") + extname,
     message: "上传成功",
   });
 });
@@ -95,9 +95,9 @@ router.post("/md", uploadFiles, async (req, res) => {
   fs.renameSync(req.file.path, `mds\\${pagesId}${extname}`);
 
   // 进行数据库操作
-  const sqlRes = await getSqlData(`
-    INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0)
-  `);
+  const sqlRes = await getSqlData(
+    `INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0)`
+  );
   if (sqlRes?.affectedRows === 1) {
     send.success(res, {}, "上传成功", true);
   }
@@ -125,21 +125,26 @@ function uploadFiles(req, res, next) {
 }
 
 function updateUrlInMd(filePath, newUrl, oldUrl) {
+  console.log(newUrl);
   fs.readFile(filePath, "utf-8", (_, data) => {
     if (oldUrl.length === newUrl.length && oldUrl.length > 0 && data) {
       //  先将原来的括号破坏，让其成为字符串，而不再是地址，否则无法使用正则替换
-      let newContent = data
-        .replace(/\(/g, "这是左括号")
-        .replace(/\)/g, "右括号");
+      let newContent = data;
+      //   .replace(/\(/g, "这是左括号")
+      //   .replace(/\)/g, "右括号");
       for (let i = 0; i < oldUrl.length; i++) {
-        oldUrl[i] = oldUrl[i]
-          .replace(/\(/g, "这是左括号")
-          .replace(/\)/g, "右括号");
-        newUrl[i] = newUrl[i].replace(/\\/g, "/");
+        // oldUrl[i] = oldUrl[i]
+        //   .replace(/\(/g, "这是左括号")
+        //   .replace(/\)/g, "右括号");
+        // newUrl[i] = newUrl[i].replace(/\\/g, "/");
         while (newContent.includes(oldUrl[i])) {
           newContent = newContent.replace(oldUrl[i], newUrl[i]);
         }
       }
+      // console.log(newContent.replace(oldUrl[0], newUrl[0]));
+      // console.log(oldUrl[0]);
+      // console.log(newUrl[0]);
+      console.log(newContent);
       const modify = data.replace(data, newContent);
       fs.writeFile(filePath, modify, () => {});
     }

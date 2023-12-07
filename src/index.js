@@ -1,6 +1,5 @@
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
 const bodyParser = require("body-parser");
 const app = express();
 const router = express.Router();
@@ -12,7 +11,7 @@ const cors = require("cors");
 // 引入全局属性
 require("dotenv").config();
 
-const { user, users, files } = require("./routes");
+const { user, users, files, pages } = require("./routes");
 const { verifyToken } = require("./utils/tokens");
 
 // 限制ip访问
@@ -33,18 +32,6 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-function getContent() {
-  const filePath = path.join(
-    __dirname,
-    "/mds",
-    "6a85fc6e8406ee19f11191c6b9cb1339.md"
-  );
-  return fs.readFileSync(filePath, "utf-8", (err, content) => {
-    if (err) return new Error("读取文件失败");
-    return content;
-  });
-}
-
 router.post("/md", (req, res) => {
   const content = getContent();
   res.send({
@@ -61,6 +48,7 @@ app.use("/test", router);
 
 // 带s的路由需要经过token鉴权
 app.use("/user", user);
+app.use("/page", pages);
 app.use("/users", verifyToken, users);
 app.use("/files", verifyToken, files);
 

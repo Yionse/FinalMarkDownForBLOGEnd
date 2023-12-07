@@ -5,7 +5,7 @@ const pool = require("../utils/getDbContext");
 const getEmailCode = require("../utils/getRandom");
 const send = require("../utils/send");
 const sendEmailCode = require("../utils/sendEmailCode");
-const { getToken, getTokenInfo } = require("../utils/tokens");
+const { getToken } = require("../utils/tokens");
 const getRandomSalt = require("../utils/getRandomSalt");
 
 const checkCode = (res, qq, code, callback) => {

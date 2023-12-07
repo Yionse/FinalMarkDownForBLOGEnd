@@ -23,7 +23,7 @@ module.exports = {
       code: 400,
       msg: msg || "Error",
       result: {
-        err,
+        ...err,
       },
     });
   },
