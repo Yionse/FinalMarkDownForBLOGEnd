@@ -41,4 +41,6 @@ router.post("/modify", async (req, res) => {
   }
 });
 
+router.post("/resetpass", async (req, res) => {});
+
 module.exports = router;

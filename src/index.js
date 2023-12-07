@@ -12,7 +12,7 @@ const cors = require("cors");
 // 引入全局属性
 require("dotenv").config();
 
-const { user, users } = require("./routes");
+const { user, users, files } = require("./routes");
 const { verifyToken } = require("./utils/tokens");
 
 // 限制ip访问
@@ -34,7 +34,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 function getContent() {
-  const filePath = path.join(__dirname, "/mds", "umi3.md");
+  const filePath = path.join(
+    __dirname,
+    "/mds",
+    "6a85fc6e8406ee19f11191c6b9cb1339.md"
+  );
   return fs.readFileSync(filePath, "utf-8", (err, content) => {
     if (err) return new Error("读取文件失败");
     return content;
@@ -58,6 +62,12 @@ app.use("/test", router);
 // 带s的路由需要经过token鉴权
 app.use("/user", user);
 app.use("/users", verifyToken, users);
+app.use("/files", verifyToken, files);
+
+// 往外跳一层
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/imgsForMd", express.static(path.join(__dirname, "../imgsForMd")));
+app.use("/mds", express.static(path.join(__dirname, "../mds")));
 
 app.listen(9876, () => {
   console.log("服务器启动成功！");

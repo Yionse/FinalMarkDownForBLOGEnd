@@ -16,8 +16,9 @@ function getTokenInfo(token) {
   jwt.verify(token, process.env.SECRETKEY, (err, res) => {
     if (err) {
       returnRes.isSuccess = false;
+      return;
     }
-    returnRes.user = res.user.split("-")[0];
+    returnRes.user = res?.user?.split("-")[0];
   });
   return returnRes;
 }
