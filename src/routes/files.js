@@ -3,6 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const getSqlData = require("../utils/getSqlData");
+const send = require("../utils/send");
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ router.post("/upload", uploadFile, async (req, res) => {
       `UPDATE USERINFO SET userImg='${url}' where qq='${req.body.qq}'`
     );
   }
-  //返回路径
+  //返回数据
   res.status(200).send({
     url,
     message: "上传成功",
@@ -80,24 +81,29 @@ function uploadFileForImg(req, res, next) {
   });
 }
 
-router.post("/md", uploadFiles, (req, res) => {
+router.post("/md", uploadFiles, async (req, res) => {
   if (!req.file) {
     return res.status(400).send("上传失败");
   }
+  const qq = JSON.parse(req.body.qq);
+  const coverUrl = JSON.parse(req.body.cover);
+  const title = JSON.parse(req.body.title);
+  const pagesId = qq + +new Date();
   // 获取上传的文件扩展名
   const extname = path.extname(req.file.originalname);
   // 为上传的文件添加扩展名
-  fs.renameSync(req.file.path, `${req.file.path}${extname}`);
-  console.log(req.body);
-  //返回信息
-  res.status(200).send({
-    url: "http://localhost:9876/" + req.file.path + extname,
-    message: "上传成功",
-  });
+  fs.renameSync(req.file.path, `mds\\${pagesId}${extname}`);
 
+  // 进行数据库操作
+  const sqlRes = await getSqlData(`
+    INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0)
+  `);
+  if (sqlRes?.affectedRows === 1) {
+    send.success(res, {}, "上传成功", true);
+  }
   // 对文件进行处理，将Url进行替换为在线的Url
   updateUrlInMd(
-    `${path.join(__dirname + "../../../", req.file.path + extname)}`,
+    `${path.join(__dirname + "../../../mds", pagesId + extname)}`,
     JSON.parse(req.body.fileList),
     JSON.parse(req.body.localImgUrl)
   );
