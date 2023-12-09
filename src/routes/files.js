@@ -59,10 +59,15 @@ router.post("/imgInMd", uploadFileForImg, (req, res) => {
   // 为上传的文件添加扩展名
   fs.renameSync(req.file.path, `${req.file.path}${extname}`);
 
+  /**
+   *   在返回时，将对应的文件名与远程url对应成一个对象， 存在映射关系，方便在前端做文件比对
+   *   文件名：req.file.originalname
+   */
+
   //返回路径
   res.status(200).send({
     url: "http://localhost:9876/" + req.file.path.replace("\\", "/") + extname,
-    message: "上传成功",
+    fileName: req.file.originalname,
   });
 });
 
@@ -104,8 +109,7 @@ router.post("/md", uploadFiles, async (req, res) => {
   // 对文件进行处理，将Url进行替换为在线的Url
   updateUrlInMd(
     `${path.join(__dirname + "../../../mds", pagesId + extname)}`,
-    JSON.parse(req.body.fileList),
-    JSON.parse(req.body.localImgUrl)
+    JSON.parse(req.body.fileList)
   );
 });
 
@@ -124,27 +128,43 @@ function uploadFiles(req, res, next) {
   });
 }
 
-function updateUrlInMd(filePath, newUrl, oldUrl) {
-  console.log(newUrl);
+function updateUrlInMd(filePath, fileList) {
   fs.readFile(filePath, "utf-8", (_, data) => {
-    if (oldUrl.length === newUrl.length && oldUrl.length > 0 && data) {
-      //  先将原来的括号破坏，让其成为字符串，而不再是地址，否则无法使用正则替换
+    // if (oldUrl.length === newUrl.length && oldUrl.length > 0 && data) {
+    //   //  先将原来的括号破坏，让其成为字符串，而不再是地址，否则无法使用正则替换
+    //   let newContent = data;
+    //   //   .replace(/\(/g, "这是左括号")
+    //   //   .replace(/\)/g, "右括号");
+    //   for (let i = 0; i < oldUrl.length; i++) {
+    //     // oldUrl[i] = oldUrl[i]
+    //     //   .replace(/\(/g, "这是左括号")
+    //     //   .replace(/\)/g, "右括号");
+    //     // newUrl[i] = newUrl[i].replace(/\\/g, "/");
+    //     while (newContent.includes(oldUrl[i])) {
+    //       newContent = newContent.replace(oldUrl[i], newUrl[i]);
+    //     }
+    //   }
+    //   // console.log(newContent.replace(oldUrl[0], newUrl[0]));
+    //   // console.log(oldUrl[0]);
+    //   // console.log(newUrl[0]);
+    //   console.log(newContent);
+    //   const modify = data.replace(data, newContent);
+    //   fs.writeFile(filePath, modify, () => {});
+    // }
+    if (fileList.length > 0 && data) {
       let newContent = data;
-      //   .replace(/\(/g, "这是左括号")
-      //   .replace(/\)/g, "右括号");
-      for (let i = 0; i < oldUrl.length; i++) {
-        // oldUrl[i] = oldUrl[i]
-        //   .replace(/\(/g, "这是左括号")
-        //   .replace(/\)/g, "右括号");
-        // newUrl[i] = newUrl[i].replace(/\\/g, "/");
-        while (newContent.includes(oldUrl[i])) {
-          newContent = newContent.replace(oldUrl[i], newUrl[i]);
+      console.log(newContent, fileList);
+      for (let i = 0; i < fileList.length; i++) {
+        while (
+          newContent.includes(fileList[i].localImg) &&
+          fileList[i].fileName
+        ) {
+          newContent = newContent.replace(
+            fileList[i].localImg,
+            fileList[i].url
+          );
         }
       }
-      // console.log(newContent.replace(oldUrl[0], newUrl[0]));
-      // console.log(oldUrl[0]);
-      // console.log(newUrl[0]);
-      console.log(newContent);
       const modify = data.replace(data, newContent);
       fs.writeFile(filePath, modify, () => {});
     }
