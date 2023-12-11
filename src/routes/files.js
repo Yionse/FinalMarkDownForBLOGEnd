@@ -93,24 +93,29 @@ router.post("/md", uploadFiles, async (req, res) => {
   const qq = JSON.parse(req.body.qq);
   const coverUrl = JSON.parse(req.body.cover);
   const title = JSON.parse(req.body.title);
+  const desc = JSON.parse(req.body.desc);
   const pagesId = qq + +new Date();
   // 获取上传的文件扩展名
   const extname = path.extname(req.file.originalname);
   // 为上传的文件添加扩展名
   fs.renameSync(req.file.path, `mds\\${pagesId}${extname}`);
 
-  // 进行数据库操作
-  const sqlRes = await getSqlData(
-    `INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0)`
-  );
-  if (sqlRes?.affectedRows === 1) {
-    send.success(res, {}, "上传成功", true);
-  }
   // 对文件进行处理，将Url进行替换为在线的Url
   updateUrlInMd(
     `${path.join(__dirname + "../../../mds", pagesId + extname)}`,
     JSON.parse(req.body.fileList)
   );
+
+  // 进行数据库操作
+  const sqlRes = await getSqlData(
+    `INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0,'${desc}')`
+  );
+
+  if (sqlRes?.affectedRows === 1) {
+    send.success(res, {}, "上传成功");
+    return;
+  }
+  send.error(res, {}, "上传失败");
 });
 
 function uploadFiles(req, res, next) {
