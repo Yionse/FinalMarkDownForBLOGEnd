@@ -108,7 +108,7 @@ router.post("/md", uploadFiles, async (req, res) => {
 
   // 进行数据库操作
   const sqlRes = await getSqlData(
-    `INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0,'${desc}')`
+    `INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0,'${desc}', 0)`
   );
 
   if (sqlRes?.affectedRows === 1) {
@@ -158,7 +158,6 @@ function updateUrlInMd(filePath, fileList) {
     // }
     if (fileList.length > 0 && data) {
       let newContent = data;
-      console.log(newContent, fileList);
       for (let i = 0; i < fileList.length; i++) {
         while (
           newContent.includes(fileList[i].localImg) &&

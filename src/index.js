@@ -11,7 +11,7 @@ const cors = require("cors");
 // 引入全局属性
 require("dotenv").config();
 
-const { user, users, files, pages } = require("./routes");
+const { user, users, files, page, pages } = require("./routes");
 const { verifyToken } = require("./utils/tokens");
 
 // 限制ip访问
@@ -48,7 +48,8 @@ app.use("/test", router);
 
 // 带s的路由需要经过token鉴权
 app.use("/user", user);
-app.use("/page", pages);
+app.use("/page", page);
+app.use("/pages", pages);
 app.use("/users", verifyToken, users);
 app.use("/files", verifyToken, files);
 

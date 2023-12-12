@@ -1,26 +1,16 @@
 const express = require("express");
+const send = require("../utils/send");
+const getSqlData = require("../utils/getSqlData");
 const router = express.Router();
 
-const send = require("../utils/send");
-const getMdContent = require("../utils/getMdContent");
-const getSqlData = require("../utils/getSqlData");
-
-router.get("/md", async (req, res) => {
-  const { pageId } = req?.query;
-  const content = getMdContent((pageId || "404") + ".md");
-  if (content) {
-    send.success(res, { content }, "读取成功");
+router.post("/delete", async (req, res) => {
+  const { id } = req.body;
+  const sqlRes = await getSqlData(`DELETE FROM pages WHERE pageid = '${id}'`);
+  if (sqlRes.affectedRows === 1) {
+    send.success(res, {}, "删除文章成功", true);
   } else {
-    send.error(res, "文章不翼而飞了", { isError: true });
+    send.warn(res, "删除文章失败");
   }
-});
-
-router.get("/list", async (req, res) => {
-  const { qq } = req?.query;
-  const sqlRes = await getSqlData(
-    `SELECT * FROM PAGES WHERE qq='${qq}' order by createtime desc`
-  );
-  send.success(res, { data: sqlRes }, "读取成功");
 });
 
 module.exports = router;
