@@ -9,6 +9,10 @@ router.get("/md", async (req, res) => {
   const { pageId } = req?.query;
   const content = getMdContent((pageId || "404") + ".md");
   if (content) {
+    // 文章阅读量加1
+    await getSqlData(
+      `UPDATE PAGES SET viewCount=viewCount+1 WHERE pageid=${pageId}`
+    );
     send.success(res, { content }, "读取成功");
   } else {
     send.error(res, "文章不翼而飞了", { isError: true });

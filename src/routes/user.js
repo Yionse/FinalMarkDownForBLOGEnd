@@ -7,6 +7,7 @@ const send = require("../utils/send");
 const sendEmailCode = require("../utils/sendEmailCode");
 const { getToken } = require("../utils/tokens");
 const getRandomSalt = require("../utils/getRandomSalt");
+const getUserInfo = require("../utils/getUserInfo");
 
 const checkCode = (res, qq, code, callback) => {
   /**
@@ -166,6 +167,12 @@ router.post("/getsalt", (req, res) => {
   } catch (error) {
     send.error(res, "网络错误", error);
   }
+});
+
+router.get("/getuserinfo", async (req, res) => {
+  const { qq } = req.query;
+  const sqlRes = await getUserInfo(qq);
+  send.success(res, { sqlRes }, "获取用户信息成功");
 });
 
 module.exports = router;

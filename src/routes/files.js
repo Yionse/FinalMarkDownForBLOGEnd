@@ -111,6 +111,10 @@ router.post("/md", uploadFiles, async (req, res) => {
     `INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0,'${desc}', 0)`
   );
 
+  await getSqlData(
+    `UPDATE USERINFO SET pagesNumber = pagesNUmber + 1 where qq='${qq}'`
+  );
+
   if (sqlRes?.affectedRows === 1) {
     send.success(res, {}, "上传成功");
     return;
