@@ -2,15 +2,42 @@ const express = require("express");
 const send = require("../utils/send");
 const getSqlData = require("../utils/getSqlData");
 const router = express.Router();
+const path = require("path");
+const fs = require("fs");
 
 router.post("/delete", async (req, res) => {
-  const { id } = req.body;
+  const { id, qq } = req.body;
   const sqlRes = await getSqlData(`DELETE FROM pages WHERE pageid = '${id}'`);
+  await getSqlData(
+    `UPDATE PAGES SET pagesCount = pagesCount -1 where qq = '${qq}`
+  );
   if (sqlRes.affectedRows === 1) {
     send.success(res, {}, "删除文章成功", true);
   } else {
     send.warn(res, "删除文章失败");
   }
+});
+
+router.post("/update", async (req, res) => {
+  const { content, title, pageid, desc, coverUrl, qq } = req.body;
+  const sqlRes = await getSqlData(
+    `UPDATE pages SET title='${title}', coverUrl='${coverUrl}', description='${desc}' WHERE qq='${qq}' AND pageid='${pageid}'`
+  );
+  fs.readFile(
+    `${path.join(__dirname + "../../../mds", pageid + ".md")}`,
+    "utf-8",
+    (err, data) => {
+      if (err) send.error(res, "修改失败");
+      if (data) {
+        fs.writeFile(
+          `${path.join(__dirname + "../../../mds", pageid + ".md")}`,
+          content,
+          () => {}
+        );
+        send.success(res, {}, "修改成功", true);
+      }
+    }
+  );
 });
 
 module.exports = router;

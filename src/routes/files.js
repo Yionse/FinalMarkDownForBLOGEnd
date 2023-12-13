@@ -139,27 +139,6 @@ function uploadFiles(req, res, next) {
 
 function updateUrlInMd(filePath, fileList) {
   fs.readFile(filePath, "utf-8", (_, data) => {
-    // if (oldUrl.length === newUrl.length && oldUrl.length > 0 && data) {
-    //   //  先将原来的括号破坏，让其成为字符串，而不再是地址，否则无法使用正则替换
-    //   let newContent = data;
-    //   //   .replace(/\(/g, "这是左括号")
-    //   //   .replace(/\)/g, "右括号");
-    //   for (let i = 0; i < oldUrl.length; i++) {
-    //     // oldUrl[i] = oldUrl[i]
-    //     //   .replace(/\(/g, "这是左括号")
-    //     //   .replace(/\)/g, "右括号");
-    //     // newUrl[i] = newUrl[i].replace(/\\/g, "/");
-    //     while (newContent.includes(oldUrl[i])) {
-    //       newContent = newContent.replace(oldUrl[i], newUrl[i]);
-    //     }
-    //   }
-    //   // console.log(newContent.replace(oldUrl[0], newUrl[0]));
-    //   // console.log(oldUrl[0]);
-    //   // console.log(newUrl[0]);
-    //   console.log(newContent);
-    //   const modify = data.replace(data, newContent);
-    //   fs.writeFile(filePath, modify, () => {});
-    // }
     if (fileList.length > 0 && data) {
       let newContent = data;
       for (let i = 0; i < fileList.length; i++) {

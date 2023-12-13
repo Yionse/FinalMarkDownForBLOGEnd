@@ -11,7 +11,7 @@ router.get("/md", async (req, res) => {
   if (content) {
     // 文章阅读量加1
     await getSqlData(
-      `UPDATE PAGES SET viewCount=viewCount+1 WHERE pageid=${pageId}`
+      `UPDATE PAGES SET viewCount=viewCount+1 WHERE pageid='${pageId}'`
     );
     send.success(res, { content }, "读取成功");
   } else {
