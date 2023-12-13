@@ -27,4 +27,20 @@ router.get("/list", async (req, res) => {
   send.success(res, { data: sqlRes }, "读取成功");
 });
 
+router.get("/indexmd", async (req, res) => {
+  const sqlRes = await getSqlData("SELECT * FROM PAGES WHERE qq='admin'");
+  send.success(res, { data: sqlRes }, "读取成功");
+});
+
+router.get("/data", async (req, res) => {
+  const { pageid } = req?.query;
+  const sqlRes = await getSqlData(
+    `SELECT likeCount, unlikeCount from Pages where pageid='${pageid}'`
+  );
+
+  if (sqlRes.length > 0) {
+    send.success(res, { data: sqlRes[0] }, "读取成功");
+  }
+});
+
 module.exports = router;
