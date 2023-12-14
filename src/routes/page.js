@@ -34,20 +34,35 @@ router.get("/indexmd", async (req, res) => {
 
 router.get("/data", async (req, res) => {
   const { pageid } = req?.query;
+  // const sqlRes = await getSqlData(
+  //   `SELECT
+  //     pages.likeCount as linkCount,
+  //     pages.unlikeCount as unlikeCount,
+  //     COUNT(usercomment.pageid) as commnetCount
+  //   FROM
+  //     pages
+  //     RIGHT JOIN usercomment ON pages.pageid = usercomment.pageid
+  //   WHERE
+  //     usercomment.pageid = '${pageid}'
+  //   GROUP BY pages.likeCount, pages.unlikeCount;`
+  // );
   const sqlRes = await getSqlData(
-    `SELECT
-      pages.likeCount as linkCount,
-      pages.unlikeCount as unlikeCount,
-      COUNT(usercomment.pageid) as commnetCount
-    FROM
-      pages
-      RIGHT JOIN usercomment ON pages.pageid = usercomment.pageid
-    WHERE
-      usercomment.pageid = '${pageid}'
-    GROUP BY pages.likeCount, pages.unlikeCount;`
+    `SELECT likeCount, unlikeCount FROM PAGES WHERE pageid='${pageid}'`
+  );
+  const sqlRes2 = await getSqlData(
+    `SELECT Count(pageId) as commnetCount FROM USERCOMMENT WHERE pageId='${pageid}'`
   );
   if (sqlRes.length > 0) {
-    send.success(res, { data: sqlRes[0] }, "读取成功");
+    send.success(
+      res,
+      {
+        data: {
+          ...sqlRes[0],
+          ...sqlRes2[0],
+        },
+      },
+      "读取成功"
+    );
   } else {
     send.error(res, "网络错误");
   }
