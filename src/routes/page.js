@@ -35,12 +35,41 @@ router.get("/indexmd", async (req, res) => {
 router.get("/data", async (req, res) => {
   const { pageid } = req?.query;
   const sqlRes = await getSqlData(
-    `SELECT likeCount, unlikeCount from Pages where pageid='${pageid}'`
+    `SELECT
+      pages.likeCount as linkCount,
+      pages.unlikeCount as unlikeCount,
+      COUNT(usercomment.pageid) as commnetCount
+    FROM
+      pages
+      RIGHT JOIN usercomment ON pages.pageid = usercomment.pageid
+    WHERE
+      usercomment.pageid = '${pageid}'
+    GROUP BY pages.likeCount, pages.unlikeCount;`
   );
-
   if (sqlRes.length > 0) {
     send.success(res, { data: sqlRes[0] }, "读取成功");
+  } else {
+    send.error(res, "网络错误");
   }
 });
 
+router.get("/commentlist", async (req, res) => {
+  const { pageid } = req?.query;
+  const sqlRes = await getSqlData(
+    `SELECT
+      usercomment.qq,
+      usercomment.createTime,
+      usercomment.content,
+      userinfo.userimg,
+      userinfo.username
+    FROM
+      usercomment
+      LEFT JOIN userinfo ON usercomment.qq = userinfo.qq
+    WHERE
+      usercomment.pageid = '${pageid}'
+    Order by
+      usercomment.createTime desc`
+  );
+  send.success(res, { data: sqlRes }, "读取成功");
+});
 module.exports = router;

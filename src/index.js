@@ -32,24 +32,10 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-router.post("/md", (req, res) => {
-  const content = getContent();
-  res.send({
-    code: 200,
-    msg: "访问成功！",
-    result: {
-      data: content,
-      res: "111",
-    },
-  });
-});
-
-app.use("/test", router);
-
 // 带s的路由需要经过token鉴权
 app.use("/user", user);
 app.use("/page", page);
-app.use("/pages", pages);
+app.use("/pages", verifyToken, pages);
 app.use("/users", verifyToken, users);
 app.use("/files", verifyToken, files);
 

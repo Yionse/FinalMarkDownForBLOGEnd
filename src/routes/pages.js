@@ -40,4 +40,16 @@ router.post("/update", async (req, res) => {
   );
 });
 
+router.get("/comment", async (req, res) => {
+  const { pageid, qq, createTime, content } = req.query;
+  const sqlRes = await getSqlData(
+    `INSERT INTO USERCOMMENT VALUES('${pageid}', '${qq}', '${createTime}', '${content}')`
+  );
+  if (sqlRes.affectedRows === 1) {
+    send.success(res, {}, "发表成功", true);
+  } else {
+    send.warn(res, "发表失败");
+  }
+});
+
 module.exports = router;
