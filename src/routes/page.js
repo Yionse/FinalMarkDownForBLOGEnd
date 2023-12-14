@@ -72,4 +72,24 @@ router.get("/commentlist", async (req, res) => {
   );
   send.success(res, { data: sqlRes }, "读取成功");
 });
+
+router.get("/operator", async (req, res) => {
+  const { pageid, type } = req?.query;
+  let sqlRes;
+  if (type === "top") {
+    sqlRes = await getSqlData(
+      `UPDATE PAGES SET likeCount=likeCount+1 WHERE pageid='${pageid}'`
+    );
+  } else {
+    sqlRes = await getSqlData(
+      `UPDATE PAGES SET unlikeCount=unlikeCount+1 WHERE pageid='${pageid}'`
+    );
+  }
+  if (sqlRes.affectedRows > 0) {
+    send.success(res, {}, `点${type === "top" ? "赞" : "踩"}成功`, true);
+  } else {
+    send.error(res, `点${type === "top" ? "赞" : "踩"}失败`);
+  }
+});
+
 module.exports = router;
