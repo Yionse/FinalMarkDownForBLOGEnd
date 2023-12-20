@@ -9,7 +9,7 @@ router.post("/delete", async (req, res) => {
   const { id, qq } = req.body;
   const sqlRes = await getSqlData(`DELETE FROM pages WHERE pageid = '${id}'`);
   await getSqlData(
-    `UPDATE PAGES SET pagesCount = pagesCount -1 where qq = '${qq}`
+    `UPDATE USERINFO SET pagesNumber = pagesNumber -1 where qq = '${qq}'`
   );
   if (sqlRes.affectedRows === 1) {
     send.success(res, {}, "删除文章成功", true);

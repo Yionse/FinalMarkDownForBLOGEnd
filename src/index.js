@@ -43,6 +43,7 @@ app.use("/files", verifyToken, files);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/imgsForMd", express.static(path.join(__dirname, "../imgsForMd")));
 app.use("/mds", express.static(path.join(__dirname, "../mds")));
+app.use("/systemImgs", express.static(path.join(__dirname, "../systemImgs")));
 
 app.listen(9876, () => {
   console.log("服务器启动成功！");

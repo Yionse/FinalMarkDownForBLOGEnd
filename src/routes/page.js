@@ -110,7 +110,7 @@ router.get("/operator", async (req, res) => {
 router.get("/query", async (req, res) => {
   const { key } = req?.query;
   const userRes = await getSqlData(
-    `SELECT userImg, userName, description from userinfo where userName like '%${key}%' or qq like '%${key}%'`
+    `SELECT qq, userImg, userName, description from userinfo where userName like '%${key}%' or qq like '%${key}%'`
   );
   const titleRes = await getSqlData(
     `SELECT * from pages where title like '%${key}%' or description like '%${key}%'`
