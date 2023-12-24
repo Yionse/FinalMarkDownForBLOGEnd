@@ -42,10 +42,16 @@ router.post("/update", async (req, res) => {
 
 router.get("/comment", async (req, res) => {
   const { pageid, qq, createTime, content } = req.query;
+  const targetQQ = pageid.slice(0, -13);
   const sqlRes = await getSqlData(
     `INSERT INTO USERCOMMENT VALUES('${pageid}', '${qq}', '${createTime}', '${content}')`
   );
-  if (sqlRes.affectedRows === 1) {
+  const sqlRes2 = await getSqlData(
+    `INSERT INTO systemnotification VALUES('${
+      pageid + +new Date()
+    }', '${pageid}', 'comment', '${targetQQ}', '${qq}', 0, ${+new Date()})`
+  );
+  if (sqlRes.affectedRows === 1 && sqlRes2.affectedRows === 1) {
     send.success(res, {}, "发表成功", true);
   } else {
     send.warn(res, "发表失败");
