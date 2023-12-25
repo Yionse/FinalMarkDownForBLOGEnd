@@ -9,7 +9,16 @@ router.post("/unreadCount", async (req, res) => {
   const sqlRes = await getSqlData(
     `SELECT count(notificationid) as unreadCount from systemnotification where targetQQ = ${qq} and isRead = 0`
   );
-  send.success(res, { unreadCount: sqlRes[0].unreadCount });
+  const sqlRes2 = await getSqlData(
+    `SELECT count(messageid) as messageUnreadCount from messagelist where targetQQ = ${qq} and isRead = 0`
+  );
+  if (sqlRes.length > 0 && sqlRes2.length > 0) {
+    send.success(res, {
+      unreadCount: sqlRes[0].unreadCount + sqlRes2[0].messageUnreadCount,
+    });
+  } else {
+    send.error(res, "网络错误");
+  }
 });
 
 router.get("/systemNotification", async (req, res) => {
@@ -24,6 +33,20 @@ router.get("/systemNotification", async (req, res) => {
   `);
   if (sqlRes.length > 0 && sqlRes2.affectedRows > 0) {
     send.success(res, { systemNotification: sqlRes });
+  } else {
+    send.error(res, "网络错误", {});
+  }
+});
+
+router.get("/send", async (req, res) => {
+  const { targetQQ, content, qq, lastDate } = req.query;
+  const sqlRes = await getSqlData(
+    `INSERT INTO messagelist VALUES('${
+      qq + targetQQ + +new Date()
+    }', '${targetQQ}', '${qq}', '${content}', '${lastDate}', '0')`
+  );
+  if (sqlRes.affectedRows > 0) {
+    send.success(res, {}, "发送成功");
   } else {
     send.error(res, "网络错误", {});
   }
