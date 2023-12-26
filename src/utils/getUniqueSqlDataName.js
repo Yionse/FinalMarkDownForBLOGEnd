@@ -21,7 +21,7 @@ function getSqlUniqueDataBaseName(qq1, qq2) {
   if (i !== max.length) {
     res += max.slice(i);
   }
-  return res;
+  return "msg" + res;
 }
 
 // 单元测试

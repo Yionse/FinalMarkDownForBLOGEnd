@@ -26,7 +26,8 @@ router.post("/send", async (req, res) => {
   const { targetQQ, content, qq, lastDate } = req.body;
   const dataName = getSqlUniqueDataBaseName(targetQQ, qq);
   await getSqlData(
-    `CREATE TABLE IF NOT EXISTS msg${dataName} (
+    // 创建两个用户关联的数据表，并且插入数据，然后将该数据库关联到各自对应的账户上
+    `CREATE TABLE IF NOT EXISTS ${dataName} (
       messageid varchar(43) NOT NULL,
       targetQQ varchar(13) NOT NULL,
       fromQQ varchar(13) NOT NULL,
@@ -34,9 +35,12 @@ router.post("/send", async (req, res) => {
       lastDate varchar(13) NOT NULL,
       isRead char(1) NOT NULL COMMENT '0未读1已读'
     );
-    INSERT INTO msg${dataName} VALUES('${
+    INSERT INTO ${dataName} VALUES('${
       qq + targetQQ + +new Date()
     }', '${targetQQ}', '${qq}', '${content}', '${lastDate}', '0' );
+
+    SELECT isIncludeTableId('${qq}', '${dataName}');
+    SELECT isIncludeTableId('${targetQQ}', '${dataName}')
     `
   );
   send.success(res, {}, "发送成功");
