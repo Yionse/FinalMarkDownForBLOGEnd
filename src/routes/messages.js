@@ -3,23 +3,7 @@ const router = express.Router();
 
 const send = require("../utils/send");
 const getSqlData = require("../utils/getSqlData");
-
-router.post("/unreadCount", async (req, res) => {
-  const { qq } = req.body;
-  const sqlRes = await getSqlData(
-    `SELECT count(notificationid) as unreadCount from systemnotification where targetQQ = ${qq} and isRead = 0`
-  );
-  const sqlRes2 = await getSqlData(
-    `SELECT count(messageid) as messageUnreadCount from messagelist where targetQQ = ${qq} and isRead = 0`
-  );
-  if (sqlRes.length > 0 && sqlRes2.length > 0) {
-    send.success(res, {
-      unreadCount: sqlRes[0].unreadCount + sqlRes2[0].messageUnreadCount,
-    });
-  } else {
-    send.error(res, "网络错误");
-  }
-});
+const getSqlUniqueDataBaseName = require("../utils/getUniqueSqlDataName");
 
 router.get("/systemNotification", async (req, res) => {
   const { qq } = req.query;
@@ -38,15 +22,43 @@ router.get("/systemNotification", async (req, res) => {
   }
 });
 
-router.get("/send", async (req, res) => {
-  const { targetQQ, content, qq, lastDate } = req.query;
-  const sqlRes = await getSqlData(
-    `INSERT INTO messagelist VALUES('${
+router.post("/send", async (req, res) => {
+  const { targetQQ, content, qq, lastDate } = req.body;
+  const dataName = getSqlUniqueDataBaseName(targetQQ, qq);
+  await getSqlData(
+    `CREATE TABLE IF NOT EXISTS msg${dataName} (
+      messageid varchar(43) NOT NULL,
+      targetQQ varchar(13) NOT NULL,
+      fromQQ varchar(13) NOT NULL,
+      content varchar(200) NOT NULL,
+      lastDate varchar(13) NOT NULL,
+      isRead char(1) NOT NULL COMMENT '0未读1已读'
+    );
+    INSERT INTO msg${dataName} VALUES('${
       qq + targetQQ + +new Date()
-    }', '${targetQQ}', '${qq}', '${content}', '${lastDate}', '0')`
+    }', '${targetQQ}', '${qq}', '${content}', '${lastDate}', '0' );
+    `
+  );
+  send.success(res, {}, "发送成功");
+});
+
+router.post("/unreadCount", async (req, res) => {
+  const { qq } = req.body;
+  send.success(res, {}, "读取成功");
+});
+
+router.get("/contactPerson", async (req, res) => {
+  const { qq } = req.query;
+  send.success(res, {}, "读取成功");
+});
+
+router.get("/read", async (req, res) => {
+  const { targetQQ, fromQQ } = req.query;
+  const sqlRes = await getSqlData(
+    `UPDATE messagelist SET isRead = 1 WHERE targetQQ = '${targetQQ}' AND fromQQ = '${fromQQ}'`
   );
   if (sqlRes.affectedRows > 0) {
-    send.success(res, {}, "发送成功");
+    send.success(res, {}, "已读成功");
   } else {
     send.error(res, "网络错误", {});
   }
