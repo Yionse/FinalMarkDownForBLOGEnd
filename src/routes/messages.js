@@ -48,7 +48,36 @@ router.post("/send", async (req, res) => {
 
 router.post("/unreadCount", async (req, res) => {
   const { qq } = req.body;
-  send.success(res, {}, "读取成功");
+  // 获取系统通知中的未读通知
+  const systemUnreadCount = await getSqlData(
+    `SELECT count(notificationid) as unreadCount from systemnotification where targetQQ = ${qq} and isRead = 0`
+  );
+  const currentTables = (
+    await getSqlData(`SELECT messageDataName FROM userinfo where qq='${qq}'`)
+  )?.[0]?.messageDataName?.split("-");
+  currentTables.pop();
+  let unreadCount = 0;
+
+  await Promise.all(
+    currentTables.map(async (element, index) => {
+      const sqlRes = await getSqlData(
+        `SELECT count(*) as unreadCount FROM ${element} where isRead = 0 and targetQQ = '${qq}'`
+      );
+      // const chatItem =
+      //   "chat" +
+      //   (sqlRes[0].targetQQ === qq ? sqlRes[0].fromQQ : sqlRes[0].targetQQ);
+      // result.push({
+      //   chat: chatItem,
+      // });
+      unreadCount += sqlRes[0].unreadCount;
+    })
+  );
+
+  send.success(
+    res,
+    { unreadCount: unreadCount + systemUnreadCount[0].unreadCount },
+    "读取成功"
+  );
 });
 
 router.get("/contactPerson", async (req, res) => {

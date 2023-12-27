@@ -3,14 +3,12 @@ const assert = require("assert");
 // 两个qq的组合，会产出唯一一个数据表名，无论先后
 function getSqlUniqueDataBaseName(qq1, qq2) {
   let res = "";
-  let min;
-  let max;
-  if (qq1.length > qq2.length) {
-    min = qq2;
-    max = qq1;
-  } else {
-    min = qq1;
-    max = qq2;
+  let min = qq1;
+  let max = qq2;
+  if (min.length > max.length) {
+    let temp = min;
+    min = max;
+    max = temp;
   }
   let i = 0;
   for (; i < min.length; i++) {
