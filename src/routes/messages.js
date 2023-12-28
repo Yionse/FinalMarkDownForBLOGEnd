@@ -33,14 +33,12 @@ router.post("/send", async (req, res) => {
       fromQQ varchar(13) NOT NULL,
       content varchar(200) NOT NULL,
       lastDate varchar(13) NOT NULL,
-      targetName varchar(100) NOT NULL,
-      targetImg varchar(100) NOT NULL,
       isRead char(1) NOT NULL COMMENT '0未读1已读',
       PRIMARY KEY (messageid)
     );
     INSERT INTO ${dataName} VALUES('${
       qq + targetQQ + +new Date()
-    }', '${targetQQ}', '${qq}', '${content}', '${lastDate}','${targetName}', '${targetImg}', '0' );
+    }', '${targetQQ}', '${qq}', '${content}', '${lastDate}', '0' );
 
     SELECT isIncludeTableId('${qq}', '${dataName}');
     SELECT isIncludeTableId('${targetQQ}', '${dataName}')
@@ -89,18 +87,24 @@ router.get("/contactPerson", async (req, res) => {
     currentTables.map(async (element) => {
       // 按照targetQQ分组，这样的话，可以将两人的消息分开，然后分别得到两人的最大的lastDate，最后再比较两人的lastDate
       const sqlRes = await getSqlData(
-        `SELECT targetQQ, max(lastDate) as lastDate, targetImg, targetName FROM ${element} GROUP BY targetQQ,targetImg, targetName`
+        `SELECT targetQQ, max(lastDate) as lastDate, fromQQ FROM ${element} GROUP BY targetQQ, fromQQ`
       );
+
       // 查询未读条数
       const sqlRes2 = await getSqlData(
         `SELECT lastDate FROM ${element} where isRead = 0 and targetQQ = '${qq}'`
       );
       const chatItem =
         sqlRes[0].targetQQ === qq ? sqlRes[0].fromQQ : sqlRes[0].targetQQ;
+
+      // 无法判断target和from，需要借助chatItem，来查询信息
+      const userInfo = await getSqlData(
+        `SELECT userImg as targetImg, userName as targetName from userinfo WHERE qq = '${chatItem}'`
+      );
       result.push({
         qq: chatItem,
-        targetImg: sqlRes[0].targetImg,
-        targetName: sqlRes[0].targetName,
+        targetImg: userInfo[0].targetImg,
+        targetName: userInfo[0].targetName,
         lastDate:
           sqlRes.length === 1
             ? Number(sqlRes[0]?.lastDate)
@@ -109,32 +113,14 @@ router.get("/contactPerson", async (req, res) => {
       });
     })
   );
-  send.success(
-    res,
-    {
-      result: result.sort((a, b) => {
-        // 如果 unreadCount 不为 0，则 a 在 b 前面
-        if (a.unreadCount !== 0 && b.unreadCount === 0) {
-          return -1;
-        }
-
-        // 如果 unreadCount 为 0，则 b 在 a 前面
-        if (a.unreadCount === 0 && b.unreadCount !== 0) {
-          return 1;
-        }
-
-        // 如果 unreadCount 相同，按照 lastDate 排序
-        return b.lastDate - a.lastDate;
-      }),
-    },
-    "读取成功"
-  );
+  send.success(res, { result }, "读取成功");
 });
 
 router.get("/read", async (req, res) => {
   const { targetQQ, fromQQ } = req.query;
+  const tableName = getSqlUniqueDataBaseName(targetQQ, fromQQ);
   const sqlRes = await getSqlData(
-    `UPDATE messagelist SET isRead = 1 WHERE targetQQ = '${targetQQ}' AND fromQQ = '${fromQQ}'`
+    `UPDATE ${tableName} SET isRead = 1 WHERE targetQQ = '${targetQQ}'`
   );
   if (sqlRes.affectedRows > 0) {
     send.success(res, {}, "已读成功");
