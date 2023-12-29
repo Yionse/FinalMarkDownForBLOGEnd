@@ -2,7 +2,6 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 const app = express();
-const router = express.Router();
 const cors = require("cors");
 
 //  启用标头处理，方便后续拿到ip地址
@@ -11,8 +10,28 @@ const cors = require("cors");
 // 引入全局属性
 require("dotenv").config();
 
+// 解决前端跨域
+app.use(cors());
+
 const { user, users, files, page, pages, messages } = require("./routes");
 const { verifyToken } = require("./utils/tokens");
+
+// 进行WebSocket操作
+const { wsConnections } = require("./utils/getSendWs");
+const WebSocket = require("ws");
+const server = new WebSocket.Server({ port: 9875 });
+
+server.on("connection", (socket, req) => {
+  const userId = req.url.split("=")?.[1];
+  wsConnections.set(userId, socket);
+  console.log(wsConnections.keys(), "连接池");
+  socket.on("error", (error) => {
+    console.log(error, "error");
+  });
+  socket.on("close", () => {
+    wsConnections.delete(userId);
+  });
+});
 
 // 限制ip访问
 // app.use((req, res, next) => {
@@ -24,9 +43,6 @@ const { verifyToken } = require("./utils/tokens");
 //     });
 //   }
 // });
-
-// 解决前端跨域
-app.use(cors());
 
 // post参数解析
 app.use(bodyParser.urlencoded({ extended: false }));

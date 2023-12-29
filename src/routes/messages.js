@@ -4,6 +4,23 @@ const router = express.Router();
 const send = require("../utils/send");
 const getSqlData = require("../utils/getSqlData");
 const getSqlUniqueDataBaseName = require("../utils/getUniqueSqlDataName");
+const { sendWs } = require("../utils/getSendWs");
+// const ws = require("../utils/getWebSocketConnection");
+
+// WebSocket 连接列表
+// const wsConnections = new Map();
+
+// ws.on("connection", (socket, req) => {
+//   const userId = req.url.split("=")?.[1];
+//   wsConnections.set(userId, socket);
+//   console.log(wsConnections.keys(), "连接池");
+//   socket.on("error", (error) => {
+//     console.log(error, "error");
+//   });
+//   socket.on("close", () => {
+//     wsConnections.delete(userId);
+//   });
+// });
 
 router.get("/systemNotification", async (req, res) => {
   const { qq } = req.query || "";
@@ -23,7 +40,7 @@ router.get("/systemNotification", async (req, res) => {
 });
 
 router.post("/send", async (req, res) => {
-  const { targetQQ, content, qq, lastDate, targetName, targetImg } = req.body;
+  const { targetQQ, content, qq, lastDate } = req.body;
   const dataName = getSqlUniqueDataBaseName(targetQQ, qq);
   await getSqlData(
     // 创建两个用户关联的数据表，并且插入数据，然后将该数据库关联到各自对应的账户上
@@ -44,6 +61,23 @@ router.post("/send", async (req, res) => {
     SELECT isIncludeTableId('${targetQQ}', '${dataName}')
     `
   );
+  // const ws = wsConnections.get(targetQQ);
+  // if (ws) {
+  //   ws.send(
+  //     JSON.stringify({
+  //       type: "message",
+  //       data: {
+  //         content,
+  //         qq,
+  //         lastDate,
+  //       },
+  //     })
+  //   );
+  // }
+  sendWs(targetQQ, qq, "message", {
+    content,
+    lastDate,
+  });
   send.success(res, {}, "发送成功");
 });
 
