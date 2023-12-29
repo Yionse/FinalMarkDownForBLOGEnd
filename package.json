@@ -19,6 +19,7 @@
     "path": "^0.12.7"
   },
   "devDependencies": {
-    "assert": "^2.1.0"
+    "assert": "^2.1.0",
+    "nodemon": "^3.0.2"
   }
 }

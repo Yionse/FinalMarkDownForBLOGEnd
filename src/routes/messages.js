@@ -6,7 +6,7 @@ const getSqlData = require("../utils/getSqlData");
 const getSqlUniqueDataBaseName = require("../utils/getUniqueSqlDataName");
 
 router.get("/systemNotification", async (req, res) => {
-  const { qq } = req.query;
+  const { qq } = req.query || "";
   // 获取该用户相关的通知
   const sqlRes = await getSqlData(
     `SELECT pageId, notificationType ,fromQQ, operatorDate, userName FROM systemnotification LEFT JOIN userinfo on systemnotification.fromQQ =  userinfo.qq where targetQQ = ${qq}`
@@ -75,7 +75,7 @@ router.post("/unreadCount", async (req, res) => {
 });
 
 router.get("/contactPerson", async (req, res) => {
-  const { qq } = req.query;
+  const { qq } = req.query || "";
   const currentTables =
     (
       await getSqlData(`SELECT messageDataName FROM userinfo where qq='${qq}'`)
@@ -127,6 +127,57 @@ router.get("/read", async (req, res) => {
   } else {
     send.error(res, "网络错误", {});
   }
+});
+
+router.get("/list", async (req, res) => {
+  // fromQQ是自己
+  const { fromQQ } = req.query || "";
+
+  // 重构一版WebSocket
+  const currentTables =
+    (
+      await getSqlData(
+        `SELECT messageDataName FROM userinfo where qq='${fromQQ}'`
+      )
+    )?.[0]?.messageDataName?.split("-") || [];
+
+  currentTables.pop();
+  const result = [];
+  await Promise.all(
+    currentTables.map(async (tableName) => {
+      const chatList = await getSqlData(
+        `SELECT targetQQ, fromQQ, content as messageContent, lastDate FROM ${tableName} `
+      );
+      const chatUser =
+        chatList?.[0].targetQQ === fromQQ
+          ? chatList?.[0].fromQQ
+          : chatList?.[0].targetQQ;
+      result.push({
+        qq: chatUser,
+        messageList: JSON.stringify(chatList),
+      });
+    })
+  );
+  const data = result.map((item) => {
+    return {
+      qq: item.qq,
+      messageList: JSON.parse(item.messageList),
+    };
+  });
+  send.success(
+    res,
+    {
+      data: data.map((item) => {
+        return {
+          qq: item.qq,
+          messageList: item.messageList.sort(
+            (a, b) => Number(a.lastDate) - Number(b.lastDate)
+          ),
+        };
+      }),
+    },
+    "读取成功"
+  );
 });
 
 module.exports = router;
