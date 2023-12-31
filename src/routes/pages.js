@@ -4,6 +4,7 @@ const getSqlData = require("../utils/getSqlData");
 const router = express.Router();
 const path = require("path");
 const fs = require("fs");
+const { sendWs } = require("../utils/getSendWs");
 
 router.post("/delete", async (req, res) => {
   const { id, qq } = req.body;
@@ -52,6 +53,7 @@ router.get("/comment", async (req, res) => {
     }', '${pageid}', 'comment', '${targetQQ}', '${qq}', 0, ${+new Date()})`
   );
   if (sqlRes.affectedRows === 1 && sqlRes2.affectedRows === 1) {
+    sendWs(targetQQ, qq, "notification", { type: "comment" });
     send.success(res, {}, "发表成功", true);
   } else {
     send.warn(res, "发表失败");

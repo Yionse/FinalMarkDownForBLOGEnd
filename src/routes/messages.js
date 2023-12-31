@@ -5,22 +5,6 @@ const send = require("../utils/send");
 const getSqlData = require("../utils/getSqlData");
 const getSqlUniqueDataBaseName = require("../utils/getUniqueSqlDataName");
 const { sendWs } = require("../utils/getSendWs");
-// const ws = require("../utils/getWebSocketConnection");
-
-// WebSocket 连接列表
-// const wsConnections = new Map();
-
-// ws.on("connection", (socket, req) => {
-//   const userId = req.url.split("=")?.[1];
-//   wsConnections.set(userId, socket);
-//   console.log(wsConnections.keys(), "连接池");
-//   socket.on("error", (error) => {
-//     console.log(error, "error");
-//   });
-//   socket.on("close", () => {
-//     wsConnections.delete(userId);
-//   });
-// });
 
 router.get("/systemNotification", async (req, res) => {
   const { qq } = req.query || "";
@@ -61,22 +45,14 @@ router.post("/send", async (req, res) => {
     SELECT isIncludeTableId('${targetQQ}', '${dataName}')
     `
   );
-  // const ws = wsConnections.get(targetQQ);
-  // if (ws) {
-  //   ws.send(
-  //     JSON.stringify({
-  //       type: "message",
-  //       data: {
-  //         content,
-  //         qq,
-  //         lastDate,
-  //       },
-  //     })
-  //   );
-  // }
+  const sqlRes = await getSqlData(
+    `SELECT userImg, userName from userinfo where qq='${qq}'`
+  );
   sendWs(targetQQ, qq, "message", {
     content,
     lastDate,
+    userName: sqlRes[0]?.userName,
+    userImg: sqlRes[0]?.userImg,
   });
   send.success(res, {}, "发送成功");
 });

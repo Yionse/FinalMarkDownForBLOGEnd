@@ -4,6 +4,7 @@ const router = express.Router();
 const send = require("../utils/send");
 const getMdContent = require("../utils/getMdContent");
 const getSqlData = require("../utils/getSqlData");
+const { sendWs } = require("../utils/getSendWs");
 
 router.get("/md", async (req, res) => {
   const { pageId } = req?.query;
@@ -96,6 +97,7 @@ router.get("/operator", async (req, res) => {
   );
   if (sqlRes.affectedRows > 0 && sqlRes2.affectedRows > 0) {
     // 进行WebSocket操作
+    sendWs(targetQQ, fromQQ, "notification", { type });
     send.success(res, {}, `点${type === "top" ? "赞" : "踩"}成功`, true);
   } else {
     send.error(res, `点${type === "top" ? "赞" : "踩"}失败`);

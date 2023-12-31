@@ -8,7 +8,7 @@ function sendWs(targetQQ, fromQQ, type, data) {
       JSON.stringify({
         fromQQ,
         type,
-        data,
+        data: data || "",
       })
     );
   }
