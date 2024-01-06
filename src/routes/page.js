@@ -90,14 +90,15 @@ router.get("/operator", async (req, res) => {
       `UPDATE PAGES SET unlikeCount=unlikeCount+1 WHERE pageid='${pageid}'`
     );
   }
+  const lastDate = +new Date();
   sqlRes2 = await getSqlData(
     `INSERT INTO systemnotification VALUES('${
-      pageid + +new Date()
-    }', '${pageid}', '${type}', '${targetQQ}', '${fromQQ}', 0, ${+new Date()})`
+      pageid + lastDate
+    }', '${pageid}', '${type}', '${targetQQ}', '${fromQQ}', 0, ${lastDate})`
   );
   if (sqlRes.affectedRows > 0 && sqlRes2.affectedRows > 0) {
     // 进行WebSocket操作
-    sendWs(targetQQ, fromQQ, "notification", { type });
+    sendWs(targetQQ, fromQQ, "notification", { type, lastDate, pageid });
     send.success(res, {}, `点${type === "top" ? "赞" : "踩"}成功`, true);
   } else {
     send.error(res, `点${type === "top" ? "赞" : "踩"}失败`);
