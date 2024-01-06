@@ -53,7 +53,11 @@ router.get("/comment", async (req, res) => {
     }', '${pageid}', 'comment', '${targetQQ}', '${qq}', 0, ${+new Date()})`
   );
   if (sqlRes.affectedRows === 1 && sqlRes2.affectedRows === 1) {
-    sendWs(targetQQ, qq, "notification", { type: "comment" });
+    sendWs(targetQQ, qq, "notification", {
+      type: "comment",
+      pageid,
+      lastDate: createTime,
+    });
     send.success(res, {}, "发表成功", true);
   } else {
     send.warn(res, "发表失败");

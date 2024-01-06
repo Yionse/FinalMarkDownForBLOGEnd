@@ -12,12 +12,22 @@ router.get("/systemNotification", async (req, res) => {
   const sqlRes = await getSqlData(
     `SELECT pageId, notificationType ,fromQQ, operatorDate, userName FROM systemnotification LEFT JOIN userinfo on systemnotification.fromQQ =  userinfo.qq where targetQQ = ${qq}`
   );
+
+  if (sqlRes.length) {
+    send.success(res, { systemNotification: sqlRes });
+  } else {
+    send.error(res, "网络错误", {});
+  }
+});
+
+router.get("/readSystemNotification", async (req, res) => {
+  const { qq } = req.query || "";
   // 将这些通知标记为已读
-  const sqlRes2 = await getSqlData(`
+  const sqlRes = await getSqlData(`
     UPDATE systemnotification SET isRead = 1 WHERE targetQQ = ${qq}
   `);
-  if (sqlRes.length > 0 && sqlRes2.affectedRows > 0) {
-    send.success(res, { systemNotification: sqlRes });
+  if (sqlRes.affectedRows > 0) {
+    send.success(res, {}, "已读成功");
   } else {
     send.error(res, "网络错误", {});
   }
