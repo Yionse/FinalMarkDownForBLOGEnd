@@ -4,6 +4,7 @@ const files = require("./files");
 const page = require("./page");
 const pages = require("./pages");
 const messages = require("./messages");
+const backManagement = require("./backManagement");
 module.exports = {
   user,
   users,
@@ -11,4 +12,5 @@ module.exports = {
   page,
   pages,
   messages,
+  backManagement,
 };

@@ -13,7 +13,15 @@ require("dotenv").config();
 // 解决前端跨域
 app.use(cors());
 
-const { user, users, files, page, pages, messages } = require("./routes");
+const {
+  user,
+  users,
+  files,
+  page,
+  pages,
+  messages,
+  backManagement,
+} = require("./routes");
 const { verifyToken } = require("./utils/tokens");
 
 // 进行WebSocket操作
@@ -47,6 +55,9 @@ server.on("connection", (socket, req) => {
 // post参数解析
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+// 新增一个后台管理的接口
+app.use("/back", backManagement);
 
 // 带s的路由需要经过token鉴权
 app.use("/user", user);
