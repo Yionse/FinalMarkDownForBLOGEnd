@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const moment = require("moment");
 
 const send = require("../utils/send");
 const getMdContent = require("../utils/getMdContent");
@@ -29,7 +30,12 @@ router.get("/list", async (req, res) => {
 });
 
 router.get("/indexmd", async (req, res) => {
+  const { platform } = req.query;
   const sqlRes = await getSqlData("SELECT * FROM PAGES WHERE qq='admin'");
+  const date = moment().format("YYYY-MM-DD");
+  await getSqlData(
+    `update visitcount set count = count + 1 where platform = '${platform}' and date = '${date}'`
+  );
   send.success(res, { data: sqlRes }, "读取成功");
 });
 
@@ -114,6 +120,25 @@ router.get("/query", async (req, res) => {
     `SELECT * from pages where title like '%${key}%' or description like '%${key}%'`
   );
   send.success(res, { userRes, titleRes }, "搜索成功");
+});
+
+router.get("/count", async (req, res) => {
+  const sqlRes = await getSqlData(
+    "SELECT sum(count) as visitCount from visitcount"
+  );
+  const sqlRes2 = await getSqlData("SELECT count(qq) as pagesCount from pages");
+  const sqlRes3 = await getSqlData(
+    "SELECT count(qq) as userCount from userinfo"
+  );
+  send.success(
+    res,
+    {
+      visitCount: sqlRes[0]?.visitCount,
+      pagesCount: sqlRes2[0].pagesCount,
+      userCount: sqlRes3[0].userCount,
+    },
+    "查询总访问量成功"
+  );
 });
 
 module.exports = router;
