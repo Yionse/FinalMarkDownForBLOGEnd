@@ -3,6 +3,7 @@ const moment = require("moment");
 const send = require("../utils/send");
 const getSqlData = require("../utils/getSqlData");
 const getRandom = require("../utils/getRandom");
+const sendEmailCode = require("../utils/sendEmailCode");
 const router = express.Router();
 
 router.post("/login", async (req, res) => {
@@ -24,8 +25,10 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/getCode", async (req, res) => {
+  const code = getRandom();
+  await sendEmailCode("3225593545", code);
   await getSqlData(
-    `UPDATE usercode set code = '${getRandom()}', sendtime = '${+new Date()}' where qq = 'admin'`
+    `UPDATE usercode set code = '${code}', sendtime = '${+new Date()}' where qq = 'admin'`
   );
   send.success(res, {}, "发送验证码成功", true);
 });
