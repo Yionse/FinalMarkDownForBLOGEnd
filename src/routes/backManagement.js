@@ -87,12 +87,20 @@ router.post("/getWebsiteData", async (req, res) => {
     "查询数据成功"
   );
 });
-// 用户总量：总量 - 近一个月注册数
-// 文章阅读汇总：总量 - 赞 - 踩 - 评论
 
-// 近一个月访问数量汇总，分为网页-app，折线图
-// 近一个月发布文章数量汇总，条形图
-// 文章阅读量：网页-weapp，饼图
-// 文章阅读量之最，列表
+// 获取图表数据
+router.post("/getChartsDataMonth", async (req, res) => {
+  const date = moment().subtract(1, "month").format("YYYY-MM-DD");
+  // 近一个月访问数量汇总，分为网页-app，折线图
+  const sqlRes = await getSqlData(
+    `SELECT * from visitcount where date > '${date}'`
+  );
+  // 近一个月发布文章数量汇总，条形图
+
+  send.success(res, { visitCollect: sqlRes }, "获取数据成功");
+});
+
+// 获取近一年的图表数据
+router.post("/getChartsDataYear", async (req, res) => {});
 
 module.exports = router;
