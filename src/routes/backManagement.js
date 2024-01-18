@@ -91,9 +91,12 @@ router.post("/getWebsiteData", async (req, res) => {
   );
 });
 
-// 获取图表数据
+// 获取图表数据 w
 router.post("/getChartsDataMonth", async (req, res) => {
-  const date = moment().subtract(1, "month").format("YYYY-MM-DD");
+  const { visitDataDateForRadius } = req.body;
+  const date = moment()
+    .subtract(1, visitDataDateForRadius)
+    .format("YYYY-MM-DD");
   // 近一个月访问数量汇总，分为网页-app，折线图
   const sqlRes = await getSqlData(
     `SELECT * from visitcount where date > '${date}'`
@@ -103,7 +106,17 @@ router.post("/getChartsDataMonth", async (req, res) => {
   send.success(res, { visitCollect: sqlRes }, "获取数据成功");
 });
 
-// 获取近一年的图表数据
-router.post("/getChartsDataYear", async (req, res) => {});
+// 获取文章阅读数据
+router.post("/getPageReadCount", async (req, res) => {
+  const sqlRes = await getSqlData(
+    "SELECT title as type, viewCount as value from pages"
+  );
+  send.success(res, { pageViewCount: sqlRes });
+});
 
+// 获取用户列表数据
+router.post("/userList", async (req, res) => {
+  const sqlRes = await getSqlData("SELECT * from userinfo");
+  send.success(res, { userList: sqlRes });
+});
 module.exports = router;
