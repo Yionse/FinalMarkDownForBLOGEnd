@@ -5,6 +5,7 @@ const getSqlData = require("../utils/getSqlData");
 const getRandom = require("../utils/getRandom");
 const sendEmailCode = require("../utils/sendEmailCode");
 const router = express.Router();
+const getMdContent = require("../utils/getMdContent");
 
 router.post("/login", async (req, res) => {
   const { code } = req.body;
@@ -118,5 +119,25 @@ router.post("/getPageReadCount", async (req, res) => {
 router.post("/userList", async (req, res) => {
   const sqlRes = await getSqlData("SELECT * from userinfo");
   send.success(res, { userList: sqlRes });
+});
+
+// 获取文章列表
+router.post("/pagesList", async (req, res) => {
+  const sqlRes = await getSqlData(
+    "SELECT pages.*, userinfo.username, userinfo.pagesNumber FROM pages LEFT JOIN userinfo ON pages.qq = userinfo.qq WHERE userinfo.qq != 'admin' and isCheckSuccess != '0'"
+  );
+  console.log(sqlRes);
+  send.success(res, { pagesList: sqlRes });
+});
+
+// 获取文章内容
+router.get("/md", async (req, res) => {
+  const { pageId } = req?.query;
+  const content = getMdContent((pageId || "404") + ".md");
+  if (content) {
+    send.success(res, { content }, "读取成功");
+  } else {
+    send.error(res, "文章不翼而飞了", { isError: true });
+  }
 });
 module.exports = router;
