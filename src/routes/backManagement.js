@@ -110,7 +110,7 @@ router.post("/getChartsDataMonth", async (req, res) => {
 // 获取文章阅读数据
 router.post("/getPageReadCount", async (req, res) => {
   const sqlRes = await getSqlData(
-    "SELECT title as type, viewCount as value from pages"
+    "SELECT title as type, viewCount as value from pages where isCheckSuccess = '1'"
   );
   send.success(res, { pageViewCount: sqlRes });
 });
@@ -124,13 +124,12 @@ router.post("/userList", async (req, res) => {
 // 获取文章列表
 router.post("/pagesList", async (req, res) => {
   const sqlRes = await getSqlData(
-    "SELECT pages.*, userinfo.username, userinfo.pagesNumber FROM pages LEFT JOIN userinfo ON pages.qq = userinfo.qq WHERE userinfo.qq != 'admin' and isCheckSuccess != '0'"
+    "SELECT pages.*, userinfo.username, userinfo.pagesNumber FROM pages LEFT JOIN userinfo ON pages.qq = userinfo.qq WHERE userinfo.qq != 'admin'"
   );
-  console.log(sqlRes);
   send.success(res, { pagesList: sqlRes });
 });
 
-// 获取文章内容
+// 获取文章内容·
 router.get("/md", async (req, res) => {
   const { pageId } = req?.query;
   const content = getMdContent((pageId || "404") + ".md");
@@ -140,4 +139,14 @@ router.get("/md", async (req, res) => {
     send.error(res, "文章不翼而飞了", { isError: true });
   }
 });
+
+// 审核过程
+router.post("/check", async (req, res) => {
+  const { pageid, isCheckSuccess, reason } = req.body;
+  await getSqlData(
+    `UPDATE pages Set isCheckSuccess=${isCheckSuccess}, reason='${reason}' where pageid = '${pageid}'`
+  );
+  send.success(res, {}, "操作成功");
+});
+
 module.exports = router;

@@ -117,7 +117,7 @@ router.get("/query", async (req, res) => {
     `SELECT qq, userImg, userName, description from userinfo where userName like '%${key}%' or qq like '%${key}%'`
   );
   const titleRes = await getSqlData(
-    `SELECT * from pages where title like '%${key}%' or description like '%${key}%'`
+    `SELECT * from pages where (title like '%${key}%' or description like '%${key}%') and isCheckSuccess = 1`
   );
   send.success(res, { userRes, titleRes }, "搜索成功");
 });
