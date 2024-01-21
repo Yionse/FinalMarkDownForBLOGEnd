@@ -64,4 +64,13 @@ router.get("/comment", async (req, res) => {
   }
 });
 
+router.post("/check", async (req, res) => {
+  const { pageid } = req.body;
+  await getSqlData(
+    `UPDATE pages set isCheckSuccess = '0', reason='', viewCount = 0 where pageid='${pageid}'`
+  );
+  console.log(pageid);
+  send.success(res, {}, "发起审核成功", true);
+});
+
 module.exports = router;
