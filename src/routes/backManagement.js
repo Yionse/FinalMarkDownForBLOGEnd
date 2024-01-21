@@ -149,4 +149,13 @@ router.post("/check", async (req, res) => {
   send.success(res, {}, "操作成功");
 });
 
+// 获取首页文章展示
+router.post("/showPage", async (req, res) => {
+  const { position } = req.body;
+  const sqlRes = await getSqlData(
+    `SELECT * from pages where position='${position}'`
+  );
+  send.success(res, { data: sqlRes }, "获取设置成功");
+});
+
 module.exports = router;
