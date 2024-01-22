@@ -153,9 +153,35 @@ router.post("/check", async (req, res) => {
 router.post("/showPage", async (req, res) => {
   const { position } = req.body;
   const sqlRes = await getSqlData(
-    `SELECT * from pages where position='${position}'`
+    `SELECT * from pages where position='${position}' and isCheckSuccess = 1`
   );
   send.success(res, { data: sqlRes }, "获取设置成功");
+});
+
+// 进行替换操作
+router.post("/replace", async (req, res) => {
+  const { position, newId, preId } = req.body;
+  await getSqlData(`UPDATE pages SET position='' where pageid='${preId}'`);
+  await getSqlData(
+    `UPDATE pages SET position='${position}' where pageid='${newId}'`
+  );
+  send.success(res, {}, "替换成供", true);
+});
+
+// 进行添加操作
+router.post("/addPage", async (req, res) => {
+  const { pageid, position } = req.body;
+  await getSqlData(
+    `UPDATE pages SET position='${position}' where pageid='${pageid}'`
+  );
+  send.success(res, {}, "添加成功", true);
+});
+
+// 删除展示文章
+router.post("/delPage", async (req, res) => {
+  const { pageid } = req.body;
+  await getSqlData(`UPDATE pages SET position = '' where pageid='${pageid}'`);
+  send.success(res, {}, "已成功移除该展示文章", true);
 });
 
 module.exports = router;

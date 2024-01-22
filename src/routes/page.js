@@ -31,7 +31,7 @@ router.get("/list", async (req, res) => {
 
 router.get("/indexmd", async (req, res) => {
   const { platform } = req.query;
-  const sqlRes = await getSqlData("SELECT * FROM PAGES WHERE qq='admin'");
+  const sqlRes = await getSqlData("SELECT * FROM PAGES where position != ''");
   const date = moment().format("YYYY-MM-DD");
   await getSqlData(
     `update visitcount set count = count + 1 where platform = '${platform}' and date = '${date}'`

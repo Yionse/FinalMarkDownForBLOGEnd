@@ -108,7 +108,7 @@ router.post("/md", uploadFiles, async (req, res) => {
 
   // 进行数据库操作
   const sqlRes = await getSqlData(
-    `INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0,'${desc}', 0, 0, '')`
+    `INSERT INTO PAGES VALUES('${qq}', '${pagesId}', '${title}', '${coverUrl}', '${+new Date()}', 0, 0,'${desc}', 0, 0, '', '')`
   );
 
   await getSqlData(
