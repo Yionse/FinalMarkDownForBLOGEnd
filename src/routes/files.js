@@ -19,7 +19,9 @@ router.post("/upload", uploadFile, async (req, res) => {
 
   // 文件在线路径
   const url =
-    "http://localhost:9876/" + req.file.path.replace("\\", "/") + extname;
+    "http://www.zhangtc.online:9876/" +
+    req.file.path.replace("\\", "/") +
+    extname;
 
   // 如果传递了qq，则说明是更换头像
   if (req.body.qq) {
@@ -66,7 +68,10 @@ router.post("/imgInMd", uploadFileForImg, (req, res) => {
 
   //返回路径
   res.status(200).send({
-    url: "http://localhost:9876/" + req.file.path.replace("\\", "/") + extname,
+    url:
+      "http://www.zhangtc.online:9876/" +
+      req.file.path.replace("\\", "/") +
+      extname,
     fileName: req.file.originalname,
   });
 });
