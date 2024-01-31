@@ -1,5 +1,7 @@
 const express = require("express");
+const https = require("https");
 const path = require("path");
+const fs = require("fs");
 const bodyParser = require("body-parser");
 const app = express();
 const cors = require("cors");
@@ -9,6 +11,17 @@ const cors = require("cors");
 
 // 引入全局属性
 require("dotenv").config();
+
+// 读取私钥和证书文件
+const privateKey = fs.readFileSync(
+  path.join(__dirname, "../blog.end.zhangtc.online.key"),
+  "utf8"
+);
+const certificate = fs.readFileSync(
+  path.join(__dirname, "../blog.end.zhangtc.online_bundle.crt"),
+  "utf8"
+);
+const credentials = { key: privateKey, cert: certificate };
 
 // 解决前端跨域
 app.use(cors());
@@ -73,6 +86,11 @@ app.use("/imgsForMd", express.static(path.join(__dirname, "../imgsForMd")));
 app.use("/mds", express.static(path.join(__dirname, "../mds")));
 app.use("/systemImgs", express.static(path.join(__dirname, "../systemImgs")));
 
-app.listen(9876, () => {
+const PORT = 443;
+
+// 启动 HTTPS 服务器
+const httpsServer = https.createServer(credentials, app);
+
+httpsServer.listen(PORT, () => {
   console.log("服务器启动成功！");
 });

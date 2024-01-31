@@ -26,3 +26,5 @@ mds
 *.njsproj
 *.sln
 *.sw?
+blog.end.zhangtc.online_bundle.crt
+blog.end.zhangtc.online.key
