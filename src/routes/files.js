@@ -16,10 +16,9 @@ router.post("/upload", uploadFile, async (req, res) => {
 
   // 为上传的文件添加扩展名
   fs.renameSync(req.file.path, `${req.file.path}${extname}`);
-
   // 文件在线路径
   const url =
-    "http://www.zhangtc.online:9876/" +
+    "https://blog.end.zhangtc.online/" +
     req.file.path.replace("\\", "/") +
     extname;
 
@@ -69,7 +68,7 @@ router.post("/imgInMd", uploadFileForImg, (req, res) => {
   //返回路径
   res.status(200).send({
     url:
-      "http://www.zhangtc.online:9876/" +
+      "https://blog.end.zhangtc.online/" +
       req.file.path.replace("\\", "/") +
       extname,
     fileName: req.file.originalname,
@@ -103,8 +102,7 @@ router.post("/md", uploadFiles, async (req, res) => {
   // 获取上传的文件扩展名
   const extname = path.extname(req.file.originalname);
   // 为上传的文件添加扩展名
-  fs.renameSync(req.file.path, `mds\\${pagesId}${extname}`);
-
+  fs.renameSync(req.file.path, `./mds\/${pagesId}${extname}`);
   // 对文件进行处理，将Url进行替换为在线的Url
   updateUrlInMd(
     `${path.join(__dirname + "../../../mds", pagesId + extname)}`,

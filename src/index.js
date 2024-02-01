@@ -86,11 +86,11 @@ app.use("/imgsForMd", express.static(path.join(__dirname, "../imgsForMd")));
 app.use("/mds", express.static(path.join(__dirname, "../mds")));
 app.use("/systemImgs", express.static(path.join(__dirname, "../systemImgs")));
 
-const PORT = 443;
+const PORT = 9876;
 
 // 启动 HTTPS 服务器
 const httpsServer = https.createServer(credentials, app);
 
-httpsServer.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log("服务器启动成功！");
 });
