@@ -6,6 +6,25 @@
 
 非必要，如果有这个需求的话，可以将私钥的.crt 和.key 引入到根目录，注意是根目录，不是 src，然后对应更改文件名即可，然后端口改成 443，在本地就可以通过 h ttps://localhost:端口号访问后端服务了
 
+- 如果不需要使用 https，请在 index 中将 https 去掉
+
+```js
+// 去掉
+const https = require("https");
+const privateKey = fs.readFileSync(
+  path.join(__dirname, "../blog.end.zhangtc.online.key"),
+  "utf8"
+);
+const certificate = fs.readFileSync(
+  path.join(__dirname, "../blog.end.zhangtc.online_bundle.crt"),
+  "utf8"
+);
+const credentials = { key: privateKey, cert: certificate };
+// 启动 HTTPS 服务器
+const httpsServer = https.createServer(credentials, app);
+//  更改为app.listen即可
+```
+
 # 缺失文件
 
 需在根文件下，新建.env 环境变量，定义自己的数据库连接以及 token 等
