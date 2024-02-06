@@ -9,7 +9,13 @@ const { sendWs } = require("../utils/getSendWs");
 
 router.get("/md", async (req, res) => {
   const { pageId } = req?.query;
-  const content = getMdContent((pageId || "404") + ".md");
+  let content;
+  try {
+    content = getMdContent((pageId || "404") + ".md");
+  } catch (error) {
+    send.error(res, "读取MD失败", { isError: true });
+    return;
+  }
   if (content) {
     // 文章阅读量加1
     await getSqlData(
