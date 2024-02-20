@@ -39,7 +39,7 @@ const { verifyToken } = require("./utils/tokens");
 
 // 进行WebSocket操作
 const { wsConnections } = require("./utils/getSendWs");
-const WebSocket = require("wss");
+const WebSocket = require("ws");
 const server = new WebSocket.Server({ port: 9875 });
 
 server.on("connection", (socket, req) => {
@@ -91,6 +91,6 @@ const PORT = 9876;
 // 启动 HTTPS 服务器
 const httpsServer = https.createServer(credentials, app);
 
-app.listen(PORT, () => {
+httpsServer.listen(PORT, () => {
   console.log("服务器启动成功！");
 });
