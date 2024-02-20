@@ -39,7 +39,7 @@ const { verifyToken } = require("./utils/tokens");
 
 // 进行WebSocket操作
 const { wsConnections } = require("./utils/getSendWs");
-const WebSocket = require("ws");
+const WebSocket = require("wss");
 const server = new WebSocket.Server({ port: 9875 });
 
 server.on("connection", (socket, req) => {
