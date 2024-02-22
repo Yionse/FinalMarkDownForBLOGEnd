@@ -12,11 +12,13 @@ router.post("/delete", async (req, res) => {
   await getSqlData(
     `UPDATE USERINFO SET pagesNumber = pagesNumber -1 where qq = '${qq}'`
   );
-  if (sqlRes.affectedRows === 1) {
-    send.success(res, {}, "删除文章成功", true);
-  } else {
-    send.warn(res, "删除文章失败");
-  }
+  fs.unlink(`${path.join(__dirname + "../../../mds", id + ".md")}`, (err) => {
+    if (sqlRes.affectedRows === 1 && !err) {
+      send.success(res, {}, "删除文章成功", true);
+    } else {
+      send.warn(res, "删除文章失败");
+    }
+  });
 });
 
 router.post("/update", async (req, res) => {
